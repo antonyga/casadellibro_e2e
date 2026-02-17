@@ -9,7 +9,10 @@ test.describe("Login", () => {
     });
 
     await test.step("Submit invalid credentials", async () => {
-      await loginPage.login("sample@sample.com", "12345678");
+      await loginPage.login(
+        process.env.INVALID_USER_EMAIL!,
+        process.env.INVALID_USER_PASSWORD!,
+      );
     });
 
     await test.step("Verify error message is displayed", async () => {
