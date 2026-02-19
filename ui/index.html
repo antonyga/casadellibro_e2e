@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestPilot — Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+    </svg>
+    <span class="logo-text">TestPilot</span>
+    <span class="logo-badge">BETA</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Overview</span>
+    <a href="index.html" class="nav-item active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="tests.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <span>Test Suites</span>
+      <span class="nav-badge">2</span>
+    </a>
+    <span class="nav-section-label">Tools</span>
+    <a href="codegen.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+      <span>AI Generator</span>
+    </a>
+    <a href="visual.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Visual Tests</span>
+    </a>
+    <span class="nav-section-label">Config</span>
+    <a href="settings.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">QA</div>
+      <div class="user-info">
+        <span class="user-name">QA Engineer</span>
+        <span class="user-role">casadellibro.com</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main Layout ──────────────────────────────────────── -->
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="env-selector">
+        <select id="envSelect">
+          <option value="prod">🟢  Production</option>
+          <option value="stage">🟡  Staging</option>
+          <option value="dev">🔵  Pre-prod</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="runAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Run All
+      </button>
+      <button class="icon-btn" title="Notifications">
+        <div class="notif-dot"></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Total Tests</span>
+          <span class="stat-value">12</span>
+          <span class="stat-delta neutral">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            No change
+          </span>
+        </div>
+        <div class="stat-icon indigo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/></svg>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Passed</span>
+          <span class="stat-value" style="color:var(--success)">9</span>
+          <span class="stat-delta up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +2 from last run
+          </span>
+        </div>
+        <div class="stat-icon green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Failed</span>
+          <span class="stat-value" style="color:var(--error)">2</span>
+          <span class="stat-delta down">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            Same as before
+          </span>
+        </div>
+        <div class="stat-icon red">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Flaky Tests</span>
+          <span class="stat-value" style="color:var(--warning)">1</span>
+          <span class="stat-delta neutral">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            Needs attention
+          </span>
+        </div>
+        <div class="stat-icon yellow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Row -->
+    <div class="chart-row">
+      <!-- Donut Chart -->
+      <div class="card">
+        <div class="card-title">
+          Test Results
+          <span class="card-title-action" onclick="refreshChart()">Refresh ↻</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="resultsChart"></canvas>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot-label"><div class="legend-dot" style="background:var(--success)"></div><span>Passed</span></div>
+            <span><span class="legend-value">9</span><span class="legend-pct">75%</span></span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot-label"><div class="legend-dot" style="background:var(--error)"></div><span>Failed</span></div>
+            <span><span class="legend-value">2</span><span class="legend-pct">17%</span></span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot-label"><div class="legend-dot" style="background:var(--warning)"></div><span>Flaky</span></div>
+            <span><span class="legend-value">1</span><span class="legend-pct">8%</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flakiness Widget -->
+      <div class="card">
+        <div class="card-title">
+          Flakiness Detection
+          <a href="tests.html" class="card-title-action">View all →</a>
+        </div>
+        <div class="flakiness-item">
+          <div class="flakiness-name">
+            <div class="test-name">Login with valid credentials</div>
+            <div class="suite-name">login.spec.ts</div>
+          </div>
+          <div class="flakiness-bar-wrap">
+            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:72%;background:var(--warning)"></div></div>
+          </div>
+          <span class="flakiness-pct" style="color:var(--warning)">72%</span>
+        </div>
+        <div class="flakiness-item">
+          <div class="flakiness-name">
+            <div class="test-name">Search by book title</div>
+            <div class="suite-name">search.spec.ts</div>
+          </div>
+          <div class="flakiness-bar-wrap">
+            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:95%;background:var(--success)"></div></div>
+          </div>
+          <span class="flakiness-pct" style="color:var(--success)">95%</span>
+        </div>
+        <div class="flakiness-item">
+          <div class="flakiness-name">
+            <div class="test-name">Invalid credentials error</div>
+            <div class="suite-name">login.spec.ts</div>
+          </div>
+          <div class="flakiness-bar-wrap">
+            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:100%;background:var(--success)"></div></div>
+          </div>
+          <span class="flakiness-pct" style="color:var(--success)">100%</span>
+        </div>
+        <div class="flakiness-item">
+          <div class="flakiness-name">
+            <div class="test-name">Homepage cookie banner</div>
+            <div class="suite-name">search.spec.ts</div>
+          </div>
+          <div class="flakiness-bar-wrap">
+            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:88%;background:var(--success)"></div></div>
+          </div>
+          <span class="flakiness-pct" style="color:var(--success)">88%</span>
+        </div>
+
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--text-secondary)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Flakiness = pass rate over last 20 runs
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Test Runs -->
+    <div class="card">
+      <div class="card-title">
+        Recent Runs
+        <a href="tests.html" class="card-title-action">View all →</a>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Test Name</th>
+              <th>Suite</th>
+              <th>Status</th>
+              <th>Browser</th>
+              <th>Duration</th>
+              <th>Run At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-label">Search by book title</td>
+              <td class="td-secondary">search.spec.ts</td>
+              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
+              <td class="td-secondary">Chrome + Firefox</td>
+              <td class="td-mono">5.6s</td>
+              <td class="td-secondary">Today, 14:32</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="viewDetails('search')">Details</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-label">Invalid credentials error</td>
+              <td class="td-secondary">login.spec.ts</td>
+              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
+              <td class="td-secondary">Chrome + Firefox</td>
+              <td class="td-mono">9.3s</td>
+              <td class="td-secondary">Today, 14:32</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="viewDetails('login-invalid')">Details</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-label">Login with valid credentials</td>
+              <td class="td-secondary">login.spec.ts</td>
+              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
+              <td class="td-secondary">Chrome + Firefox</td>
+              <td class="td-mono">13.9s</td>
+              <td class="td-secondary">Today, 14:32</td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="viewDetails('login-valid')">Details</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-label">Add book to cart</td>
+              <td class="td-secondary">cart.spec.ts</td>
+              <td><span class="badge badge-failed"><span class="badge-dot"></span>Failed</span></td>
+              <td class="td-secondary">Chrome</td>
+              <td class="td-mono">8.1s</td>
+              <td class="td-secondary">Today, 13:15</td>
+              <td>
+                <button class="btn btn-danger btn-sm" onclick="openFailureModal()">Inspect</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-label">Checkout flow</td>
+              <td class="td-secondary">checkout.spec.ts</td>
+              <td><span class="badge badge-running"><span class="badge-dot"></span>Running</span></td>
+              <td class="td-secondary">Firefox</td>
+              <td class="td-mono">—</td>
+              <td class="td-secondary">Today, 14:35</td>
+              <td>
+                <button class="btn btn-ghost btn-sm">Stop</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Failure Modal ────────────────────────────────────── -->
+<div class="modal-overlay" id="failureModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>
+        <span class="badge badge-failed" style="margin-right:8px"><span class="badge-dot"></span>Failed</span>
+        Add book to cart — cart.spec.ts
+      </h3>
+      <button class="modal-close" onclick="closeModal('failureModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-summary">
+        <div class="ai-summary-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+        </div>
+        <div class="ai-summary-text">
+          <span class="ai-summary-label">✦ AI Error Summary</span>
+          The "Add to Cart" button was not clickable because the cookie consent banner appeared on top of it, blocking pointer events. The test tried to click the button but a floating overlay intercepted the action. <strong>Suggested fix:</strong> ensure <code>acceptCookies()</code> is called before interacting with product pages.
+        </div>
+      </div>
+      <div class="error-screenshot" style="background:#f1f5f9;height:180px;display:flex;align-items:center;justify-content:center;border-radius:8px;margin-bottom:16px;">
+        <div style="text-align:center;color:var(--text-secondary)">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;opacity:0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p style="font-size:0.8rem">Failure screenshot captured</p>
+          <p style="font-size:0.72rem;margin-top:4px">test-failed-1.png</p>
+        </div>
+      </div>
+      <div class="trace-row mb-4">
+        <div class="trace-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          View Trace Recording
+        </div>
+        <div class="trace-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2H3v16h5l3 3 3-3h7V2z"/></svg>
+          Download Trace (.zip)
+        </div>
+        <div class="trace-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Full Stack Trace
+        </div>
+      </div>
+      <div style="background:var(--bg-app);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'SF Mono','Fira Code',monospace;font-size:0.75rem;color:var(--error);line-height:1.8;">
+        TimeoutError: locator.click: Timeout 15000ms exceeded<br>
+        &nbsp;&nbsp;at CartPage.addToCart (pages/cart-page.ts:24)<br>
+        &nbsp;&nbsp;at tests/cart.spec.ts:18<br>
+        <span style="color:var(--text-secondary)">Expected: element to be visible and clickable<br>
+        Received: element intercepted by overlay (.cabecera)</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('failureModal')">Close</button>
+      <button class="btn btn-primary" onclick="reRecord()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+        Re-record this Step
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Chart ──────────────────────────────────────────────────
+const ctx = document.getElementById('resultsChart').getContext('2d');
+new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Passed', 'Failed', 'Flaky'],
+    datasets: [{
+      data: [9, 2, 1],
+      backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+      borderWidth: 0,
+      spacing: 3,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    cutout: '70%',
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tests` }
+    }},
+    animation: { animateRotate: true, duration: 900, easing: 'easeOutQuart' }
+  }
+});
+
+function refreshChart() {
+  const btn = document.querySelector('.card-title-action');
+  btn.textContent = 'Refreshing…';
+  setTimeout(() => btn.textContent = 'Refresh ↻', 1200);
+}
+
+// ── Modal ──────────────────────────────────────────────────
+function openFailureModal() { document.getElementById('failureModal').classList.add('open'); }
+function closeModal(id)      { document.getElementById(id).classList.remove('open'); }
+
+document.getElementById('failureModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('failureModal');
+});
+
+function reRecord() {
+  closeModal('failureModal');
+  window.location.href = 'codegen.html';
+}
+
+function viewDetails(id) {
+  window.location.href = 'tests.html';
+}
+
+function runAll() {
+  const btn = document.querySelector('.btn-primary');
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Running…';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run All';
+    btn.disabled = false;
+  }, 2500);
+}
+
+// Animate flakiness bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.flakiness-bar-fill').forEach(el => {
+    const w = el.style.width;
+    el.style.width = '0';
+    setTimeout(() => el.style.width = w, 200);
+  });
+});
+</script>
+</body>
+</html>

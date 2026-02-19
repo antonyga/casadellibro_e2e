@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestPilot — Test Suites</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    <span class="logo-text">TestPilot</span><span class="logo-badge">BETA</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Overview</span>
+    <a href="index.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="tests.html" class="nav-item active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <span>Test Suites</span><span class="nav-badge">2</span>
+    </a>
+    <span class="nav-section-label">Tools</span>
+    <a href="codegen.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+      <span>AI Generator</span>
+    </a>
+    <a href="visual.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Visual Tests</span>
+    </a>
+    <span class="nav-section-label">Config</span>
+    <a href="settings.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">QA</div>
+      <div class="user-info"><span class="user-name">QA Engineer</span><span class="user-role">casadellibro.com</span></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">Test Suites</h1>
+      <div class="breadcrumb"><span>casadellibro.com</span><span>/</span><span class="crumb-current">Test Suites</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="env-selector">
+        <select><option>🟢  Production</option><option>🟡  Staging</option><option>🔵  Pre-prod</option></select>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="runSelected()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        Run Selected
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="window.location.href='codegen.html'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Test
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- Toolbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
+      <div class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search tests…" id="searchInput" oninput="filterTests()" />
+      </div>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All <span class="count">8</span></button>
+        <button class="filter-chip" data-filter="passed" onclick="setFilter('passed',this)">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0"></span>Passed <span class="count">5</span>
+        </button>
+        <button class="filter-chip" data-filter="failed" onclick="setFilter('failed',this)">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--error);flex-shrink:0"></span>Failed <span class="count">2</span>
+        </button>
+        <button class="filter-chip" data-filter="running" onclick="setFilter('running',this)">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--running);flex-shrink:0"></span>Running <span class="count">1</span>
+        </button>
+        <button class="filter-chip" data-filter="flaky" onclick="setFilter('flaky',this)">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--warning);flex-shrink:0"></span>Flaky
+        </button>
+      </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div id="bulkBar" style="display:none;align-items:center;gap:10px;background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:10px 16px;margin-bottom:16px;">
+      <span style="font-size:0.82rem;font-weight:600;color:var(--accent)" id="bulkCount">0 selected</span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="bulkRun()">Run Selected</button>
+        <button class="btn btn-danger btn-sm" onclick="bulkDelete()">Delete</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table id="testsTable">
+        <thead>
+          <tr>
+            <th style="width:40px"><input type="checkbox" id="selectAll" class="row-check" onchange="toggleAll(this)"/></th>
+            <th>Test Name</th>
+            <th>Suite File</th>
+            <th>Status</th>
+            <th>Browser</th>
+            <th>Duration</th>
+            <th>Last Run</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="testsBody">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ── Failure Detail Modal ─────────────────────────────── -->
+<div class="modal-overlay" id="failureModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3><span class="badge badge-failed" style="margin-right:8px"><span class="badge-dot"></span>Failed</span><span id="failModalTitle">Test failed</span></h3>
+      <button class="modal-close" onclick="closeModal('failureModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-summary">
+        <div class="ai-summary-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+        </div>
+        <div class="ai-summary-text" id="aiErrorSummary"></div>
+      </div>
+      <div style="background:var(--bg-app);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'SF Mono','Fira Code',monospace;font-size:0.75rem;color:var(--error);line-height:1.8;margin-bottom:16px" id="stackTrace"></div>
+      <div class="trace-row">
+        <div class="trace-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>View Trace</div>
+        <div class="trace-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Trace</div>
+        <div class="trace-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Replay Video</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('failureModal')">Close</button>
+      <button class="btn btn-primary" onclick="closeModal('failureModal');window.location.href='codegen.html'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+        Re-record this Step
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Test Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Test</h3>
+      <button class="modal-close" onclick="closeModal('editModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:16px">
+      <div class="form-group">
+        <label class="form-label">Test Name</label>
+        <input class="form-input" id="editName" type="text" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Suite File</label>
+        <input class="form-input" id="editSuite" type="text" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Browser</label>
+        <select class="form-select" id="editBrowser">
+          <option>Chrome + Firefox</option><option>Chrome</option><option>Firefox</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TESTS = [
+  { id:1, name:'Search by book title',            suite:'search.spec.ts',   status:'passed',  browser:'Chrome + Firefox', duration:'5.6s', lastRun:'Today, 14:32' },
+  { id:2, name:'Invalid credentials error',        suite:'login.spec.ts',    status:'passed',  browser:'Chrome + Firefox', duration:'9.3s', lastRun:'Today, 14:32' },
+  { id:3, name:'Login with valid credentials',     suite:'login.spec.ts',    status:'passed',  browser:'Chrome + Firefox', duration:'13.9s',lastRun:'Today, 14:32' },
+  { id:4, name:'Add book to cart',                 suite:'cart.spec.ts',     status:'failed',  browser:'Chrome',           duration:'8.1s', lastRun:'Today, 13:15' },
+  { id:5, name:'Checkout flow',                    suite:'checkout.spec.ts', status:'running', browser:'Firefox',          duration:'—',    lastRun:'Today, 14:35' },
+  { id:6, name:'Book category navigation',         suite:'nav.spec.ts',      status:'passed',  browser:'Chrome + Firefox', duration:'4.2s', lastRun:'Today, 12:00' },
+  { id:7, name:'Search result pagination',         suite:'search.spec.ts',   status:'flaky',   browser:'Chrome',           duration:'7.8s', lastRun:'Today, 11:45' },
+  { id:8, name:'Add to wishlist',                  suite:'wishlist.spec.ts', status:'failed',  browser:'Firefox',          duration:'6.3s', lastRun:'Today, 11:30' },
+];
+
+const ERRORS = {
+  4: { title:'Add book to cart', summary:'<span class="ai-summary-label">✦ AI Error Summary</span>The "Add to Cart" button was blocked by the sticky navigation overlay. The header\'s mega-menu expanded over the button and intercepted all pointer events. <strong>Fix:</strong> add <code>page.keyboard.press("Escape")</code> before clicking the cart button to dismiss the menu.', stack:'TimeoutError: locator.click timeout 15000ms exceeded\n  at CartPage.addToCart (pages/cart-page.ts:24)\n  at tests/cart.spec.ts:18\nExpected: clickable\nReceived: intercepted by .cabecera overlay' },
+  8: { title:'Add to wishlist', summary:'<span class="ai-summary-label">✦ AI Error Summary</span>The wishlist icon was not found on the page. The selector <code>[data-test="wishlist-btn"]</code> returned 0 elements. This is likely a self-healing scenario — the element\'s test attribute may have changed. <strong>Fix:</strong> use a role-based selector or run the AI locator repair.', stack:'ElementNotFoundError: [data-test="wishlist-btn"]\n  at WishlistPage.add (pages/wishlist-page.ts:14)\n  at tests/wishlist.spec.ts:22\nExpected: visible\nReceived: not found (0 elements)' },
+};
+
+let currentFilter = 'all';
+let selectedIds = new Set();
+let editingId = null;
+
+function statusBadge(s) {
+  const map = { passed:'badge-passed', failed:'badge-failed', running:'badge-running', flaky:'badge-flaky', skipped:'badge-skipped' };
+  const labels = { passed:'Passed', failed:'Failed', running:'Running', flaky:'Flaky', skipped:'Skipped' };
+  return `<span class="badge ${map[s]}"><span class="badge-dot"></span>${labels[s]}</span>`;
+}
+
+function actionsMenu(t) {
+  if (t.status === 'failed') {
+    return `<div style="display:flex;gap:6px">
+      <button class="btn btn-danger btn-sm" onclick="openFailure(${t.id})">Inspect</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEdit(${t.id})">Edit</button>
+    </div>`;
+  }
+  if (t.status === 'running') {
+    return `<button class="btn btn-secondary btn-sm">Stop</button>`;
+  }
+  return `<div style="display:flex;gap:6px">
+    <button class="btn btn-ghost btn-sm" onclick="runOne(${t.id})">Run</button>
+    <button class="btn btn-ghost btn-sm" onclick="openEdit(${t.id})">Edit</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteTest(${t.id})">Delete</button>
+  </div>`;
+}
+
+function render() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = TESTS.filter(t => {
+    if (currentFilter !== 'all' && t.status !== currentFilter) return false;
+    if (search && !t.name.toLowerCase().includes(search) && !t.suite.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tbody = document.getElementById('testsBody');
+  tbody.innerHTML = filtered.map(t => `
+    <tr data-id="${t.id}" data-status="${t.status}" style="${t.status==='running'?'background:var(--running-light);':t.status==='failed'?'background:var(--error-light);':''}">
+      <td><input type="checkbox" class="row-check" onchange="toggleRow(${t.id},this)" ${selectedIds.has(t.id)?'checked':''}></td>
+      <td class="td-label">${t.name}${t.status==='flaky'?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5" style="margin-left:6px;vertical-align:middle"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>':''}</td>
+      <td class="td-mono">${t.suite}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td class="td-secondary">${t.browser}</td>
+      <td class="td-mono">${t.duration}</td>
+      <td class="td-secondary">${t.lastRun}</td>
+      <td>${actionsMenu(t)}</td>
+    </tr>
+  `).join('') || `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:0.85rem">No tests match your filters.</td></tr>`;
+}
+
+function filterTests() { render(); }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+function toggleAll(cb) {
+  const visible = document.querySelectorAll('#testsBody [type=checkbox]');
+  visible.forEach(c => { c.checked = cb.checked; const id = parseInt(c.closest('tr').dataset.id); if (cb.checked) selectedIds.add(id); else selectedIds.delete(id); });
+  updateBulkBar();
+}
+function toggleRow(id, cb) { if (cb.checked) selectedIds.add(id); else selectedIds.delete(id); updateBulkBar(); }
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  bar.style.display = selectedIds.size > 0 ? 'flex' : 'none';
+  document.getElementById('bulkCount').textContent = `${selectedIds.size} selected`;
+}
+function clearSelection() { selectedIds.clear(); document.querySelectorAll('.row-check').forEach(c => c.checked=false); updateBulkBar(); }
+function bulkRun()    { alert(`Running ${selectedIds.size} test(s)…`); clearSelection(); }
+function bulkDelete() { if(confirm(`Delete ${selectedIds.size} test(s)?`)) { clearSelection(); } }
+function runSelected(){ alert('Running selected tests…'); }
+function runOne(id)   { alert(`Running test #${id}…`); }
+function deleteTest(id){ if(confirm('Delete this test?')) { const idx=TESTS.findIndex(t=>t.id===id); if(idx>-1) TESTS.splice(idx,1); render(); } }
+
+function openFailure(id) {
+  const e = ERRORS[id];
+  if (!e) return;
+  document.getElementById('failModalTitle').textContent = e.title;
+  document.getElementById('aiErrorSummary').innerHTML = e.summary;
+  document.getElementById('stackTrace').innerHTML = e.stack.replace(/\n/g,'<br>');
+  document.getElementById('failureModal').classList.add('open');
+}
+function openEdit(id) {
+  const t = TESTS.find(t=>t.id===id);
+  if (!t) return;
+  editingId = id;
+  document.getElementById('editName').value = t.name;
+  document.getElementById('editSuite').value = t.suite;
+  document.getElementById('editModal').classList.add('open');
+}
+function saveEdit() {
+  const t = TESTS.find(t=>t.id===editingId);
+  if (t) { t.name=document.getElementById('editName').value; t.suite=document.getElementById('editSuite').value; }
+  closeModal('editModal'); render();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(m.id); }));
+
+render();
+</script>
+</body>
+</html>

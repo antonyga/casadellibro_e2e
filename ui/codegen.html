@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestPilot — AI Generator</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    <span class="logo-text">TestPilot</span><span class="logo-badge">BETA</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Overview</span>
+    <a href="index.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="tests.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/></svg>
+      <span>Test Suites</span>
+    </a>
+    <span class="nav-section-label">Tools</span>
+    <a href="codegen.html" class="nav-item active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+      <span>AI Generator</span>
+    </a>
+    <a href="visual.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Visual Tests</span>
+    </a>
+    <span class="nav-section-label">Config</span>
+    <a href="settings.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">QA</div>
+      <div class="user-info"><span class="user-name">QA Engineer</span><span class="user-role">casadellibro.com</span></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">AI Generator</h1>
+      <div class="breadcrumb"><span>Tools</span><span>/</span><span class="crumb-current">AI Generator</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="env-selector">
+        <select><option>🟢  Production</option><option>🟡  Staging</option><option>🔵  Pre-prod</option></select>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="csvBtn" onclick="toggleCsvPanel()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Data Table
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- AI Prompt -->
+    <div class="prompt-box">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+        </div>
+        <span style="font-weight:600;font-size:0.85rem">Describe your test in plain English</span>
+        <span style="font-size:0.75rem;color:var(--text-secondary);margin-left:4px">Powered by GPT-4o</span>
+      </div>
+      <div class="prompt-input-row">
+        <textarea class="prompt-input" id="promptInput" placeholder="E.g. Search for 'Don Quijote', verify at least 5 results appear, click the first book and check the title is visible on the product page…" rows="2"></textarea>
+        <button class="btn btn-primary" id="generateBtn" onclick="generateTest()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          Generate
+        </button>
+      </div>
+      <div class="prompt-actions">
+        <span class="prompt-hint">Try:</span>
+        <button class="filter-chip" onclick="useExample(this)" style="font-size:0.72rem;padding:3px 10px">"Login with valid credentials and verify account page"</button>
+        <button class="filter-chip" onclick="useExample(this)" style="font-size:0.72rem;padding:3px 10px">"Search for a book and add it to cart"</button>
+        <button class="filter-chip" onclick="useExample(this)" style="font-size:0.72rem;padding:3px 10px">"Accept cookies then verify the homepage loads"</button>
+      </div>
+    </div>
+
+    <!-- CSV Panel (hidden by default) -->
+    <div id="csvPanel" style="display:none;margin-bottom:20px">
+      <div class="card">
+        <div class="card-title">
+          Data-Driven Testing — CSV Upload
+          <button class="btn btn-secondary btn-sm" onclick="addCsvRow()">+ Add Row</button>
+        </div>
+        <p style="margin-bottom:16px">Map multiple data sets to a single test script. Each row runs as a separate test iteration.</p>
+        <div class="csv-table mb-4">
+          <table id="csvTable">
+            <thead>
+              <tr>
+                <th>Search Query</th>
+                <th>Expected Min Results</th>
+                <th>Expected First Title (contains)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td contenteditable>Don Quijote</td><td contenteditable>5</td><td contenteditable>Quijote</td><td><button class="btn btn-ghost btn-sm" onclick="this.closest('tr').remove()">✕</button></td></tr>
+              <tr><td contenteditable>Harry Potter</td><td contenteditable>3</td><td contenteditable>Potter</td><td><button class="btn btn-ghost btn-sm" onclick="this.closest('tr').remove()">✕</button></td></tr>
+              <tr><td contenteditable>García Márquez</td><td contenteditable>8</td><td contenteditable>García</td><td><button class="btn btn-ghost btn-sm" onclick="this.closest('tr').remove()">✕</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload CSV
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="generateFromCsv()">Generate Data-Driven Test</button>
+          <span style="font-size:0.75rem;color:var(--text-secondary)">3 rows · will produce 3 test iterations</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Pane -->
+    <div class="split-pane">
+      <!-- Left: Steps -->
+      <div class="pane-left">
+        <div class="pane-header" style="justify-content:space-between">
+          <span class="pane-title">Recorded Steps</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" id="clearBtn" onclick="clearSteps()">Clear</button>
+          </div>
+        </div>
+        <div class="pane-body scrollbar-thin" id="stepsList">
+          <!-- Default: empty state -->
+          <div id="emptySteps" style="text-align:center;padding:40px 20px;color:var(--text-secondary)">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 12px;opacity:0.3"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+            <p>Describe your test above or drag steps from the library</p>
+          </div>
+        </div>
+
+        <!-- Drag-and-Drop Library -->
+        <div style="border-top:1px solid var(--border);padding:12px">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">
+            ☰ Step Library — drag to add
+          </div>
+          <div class="step-library scrollbar-thin" style="max-height:200px;overflow-y:auto">
+            <span class="library-section-title">🛒 E-Commerce</span>
+            <div class="draggable-step" draggable="true" data-action="Accept cookie banner" data-detail="page.locator('#onetrust-accept-btn-handler').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Accept cookie banner
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+            <div class="draggable-step" draggable="true" data-action="Search for a book" data-detail="page.locator('#empathy-search').fill(query)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Search for a book
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+            <div class="draggable-step" draggable="true" data-action="Add to cart" data-detail="page.getByRole('button',{name:'añadir al carrito'}).click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+              Add to cart
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+            <div class="draggable-step" draggable="true" data-action="Clear shopping cart" data-detail="page.locator('[data-test=clear-cart]').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Clear shopping cart
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+            <span class="library-section-title">🔐 Auth</span>
+            <div class="draggable-step" draggable="true" data-action="Login with credentials" data-detail="loginPage.login(email, password)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+              Login with credentials
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+            <div class="draggable-step" draggable="true" data-action="Assert error message" data-detail="expect(page.getByText('error')).toBeVisible()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+              Assert error message
+              <svg class="drag-handle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Code -->
+      <div class="pane-right">
+        <div class="pane-header-dark" style="justify-content:space-between">
+          <span class="pane-title-dark">Generated Playwright Code</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.12)" onclick="copyCode()">Copy</button>
+            <button class="btn btn-sm" style="background:rgba(79,70,229,0.7);color:#fff;border:none" onclick="saveTest()">Save Test</button>
+          </div>
+        </div>
+        <div class="pane-code scrollbar-thin" id="codePane">
+          <span class="code-cm">// ← Describe your test above and click Generate</span><br>
+          <span class="code-cm">// or drag steps from the library on the left</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let steps = [];
+let stepCounter = 0;
+
+const GENERATED_CODE = {
+  default: `<span class="code-kw">import</span> { <span class="code-var">test</span>, <span class="code-var">expect</span> } <span class="code-kw">from</span> <span class="code-str">"../fixtures"</span>;<br><br><span class="code-fn">test</span>.<span class="code-fn">describe</span>(<span class="code-str">"AI Generated: Book Search"</span>, () => {<br>&nbsp;&nbsp;<span class="code-fn">test</span>(<span class="code-str">"Search for a book and verify results"</span>, <span class="code-kw">async</span> ({ <span class="code-var">homePage</span>, <span class="code-var">resultsPage</span> }) => {<br><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-fn">test</span>.<span class="code-fn">step</span>(<span class="code-str">"Navigate to the homepage"</span>, <span class="code-kw">async</span> () => {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-var">homePage</span>.<span class="code-fn">goto</span>();<br>&nbsp;&nbsp;&nbsp;&nbsp;});<br><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-fn">test</span>.<span class="code-fn">step</span>(<span class="code-str">"Search for 'Don Quijote'"</span>, <span class="code-kw">async</span> () => {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-var">homePage</span>.<span class="code-fn">searchForBook</span>(<span class="code-str">"Don Quijote"</span>);<br>&nbsp;&nbsp;&nbsp;&nbsp;});<br><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-fn">test</span>.<span class="code-fn">step</span>(<span class="code-str">"Verify at least 5 results appear"</span>, <span class="code-kw">async</span> () => {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">const</span> <span class="code-var">titles</span> = <span class="code-kw">await</span> <span class="code-var">resultsPage</span>.<span class="code-fn">getBookTitles</span>();<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">expect</span>(<span class="code-var">titles</span>.<span class="code-var">length</span>).<span class="code-fn">toBeGreaterThanOrEqual</span>(<span class="code-num">5</span>);<br>&nbsp;&nbsp;&nbsp;&nbsp;});<br><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-fn">test</span>.<span class="code-fn">step</span>(<span class="code-str">"Verify first result mentions 'Quijote'"</span>, <span class="code-kw">async</span> () => {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">expect</span>(<span class="code-var">titles</span>[<span class="code-num">0</span>].<span class="code-fn">toLowerCase</span>()).<span class="code-fn">toContain</span>(<span class="code-str">"quijote"</span>);<br>&nbsp;&nbsp;&nbsp;&nbsp;});<br>&nbsp;&nbsp;});<br>});`,
+};
+
+function generateTest() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt) { document.getElementById('promptInput').focus(); return; }
+  const btn = document.getElementById('generateBtn');
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="40" stroke-dashoffset="40" style="animation:dash 1s linear infinite"><circle cx="12" cy="12" r="10"/></svg> Generating…';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg> Generate';
+    btn.disabled = false;
+    document.getElementById('codePane').innerHTML = GENERATED_CODE.default;
+    steps = [
+      { action: 'Navigate to homepage', detail: 'homePage.goto()', done: true },
+      { action: 'Search for book', detail: 'homePage.searchForBook("Don Quijote")', done: true },
+      { action: 'Verify ≥5 results', detail: 'resultsPage.getBookTitles()', done: true },
+      { action: 'Assert first title matches', detail: "expect(titles[0]).toContain('quijote')", done: true },
+    ];
+    renderSteps();
+  }, 1800);
+}
+
+function renderSteps() {
+  const list = document.getElementById('stepsList');
+  const empty = document.getElementById('emptySteps');
+  if (!steps.length) { empty.style.display='block'; list.querySelectorAll('.step-item').forEach(e=>e.remove()); return; }
+  empty.style.display = 'none';
+  list.querySelectorAll('.step-item').forEach(e => e.remove());
+  steps.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = `step-item${s.done?' step-done':''}`;
+    el.innerHTML = `
+      <div class="step-number">${s.done?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>':i+1}</div>
+      <div class="step-content">
+        <div class="step-action">${s.action}</div>
+        <div class="step-detail">${s.detail}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-icon-only" onclick="removeStep(${i})" title="Remove">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    list.appendChild(el);
+  });
+}
+
+function removeStep(i) { steps.splice(i,1); renderSteps(); }
+function clearSteps()  { steps=[]; renderSteps(); document.getElementById('codePane').innerHTML='<span class="code-cm">// Steps cleared</span>'; }
+
+function useExample(btn) { document.getElementById('promptInput').value = btn.textContent.replace(/['"]/g,''); }
+
+function toggleCsvPanel() {
+  const p = document.getElementById('csvPanel');
+  p.style.display = p.style.display==='none' ? 'block' : 'none';
+}
+
+function addCsvRow() {
+  const tb = document.querySelector('#csvTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td contenteditable>New query</td><td contenteditable>1</td><td contenteditable></td><td><button class="btn btn-ghost btn-sm" onclick="this.closest(\'tr\').remove()">✕</button></td>';
+  tb.appendChild(tr);
+}
+
+function generateFromCsv() {
+  const rows = document.querySelectorAll('#csvTable tbody tr');
+  const code = `<span class="code-kw">import</span> { <span class="code-var">test</span>, <span class="code-var">expect</span> } <span class="code-kw">from</span> <span class="code-str">"../fixtures"</span>;<br><br><span class="code-kw">const</span> <span class="code-var">DATA</span> = [<br>${Array.from(rows).map(r=>{const cells=r.querySelectorAll('td');return `&nbsp;&nbsp;{ query: <span class="code-str">"${cells[0]?.textContent}"</span>, minResults: <span class="code-num">${cells[1]?.textContent}</span>, contains: <span class="code-str">"${cells[2]?.textContent}"</span> },`;}).join('<br>')}<br>];<br><br><span class="code-kw">for</span> (<span class="code-kw">const</span> <span class="code-var">d</span> <span class="code-kw">of</span> <span class="code-var">DATA</span>) {<br>&nbsp;&nbsp;<span class="code-fn">test</span>(<span class="code-str">\`Search: \${<span class="code-var">d</span>.query}\`</span>, <span class="code-kw">async</span> ({ <span class="code-var">homePage</span>, <span class="code-var">resultsPage</span> }) => {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-var">homePage</span>.<span class="code-fn">goto</span>();<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">await</span> <span class="code-var">homePage</span>.<span class="code-fn">searchForBook</span>(<span class="code-var">d</span>.query);<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-kw">const</span> <span class="code-var">titles</span> = <span class="code-kw">await</span> <span class="code-var">resultsPage</span>.<span class="code-fn">getBookTitles</span>();<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">expect</span>(<span class="code-var">titles</span>.length).<span class="code-fn">toBeGreaterThanOrEqual</span>(<span class="code-var">d</span>.minResults);<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">expect</span>(<span class="code-var">titles</span>[<span class="code-num">0</span>].toLowerCase()).<span class="code-fn">toContain</span>(<span class="code-var">d</span>.contains.toLowerCase());<br>&nbsp;&nbsp;});<br>}`;
+  document.getElementById('codePane').innerHTML = code;
+  toggleCsvPanel();
+}
+
+function copyCode() {
+  const code = document.getElementById('codePane').innerText;
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  const btn = event.target.closest('button');
+  btn.textContent = 'Copied!';
+  setTimeout(()=>btn.textContent='Copy', 1500);
+}
+
+function saveTest() {
+  const btn = event.target.closest('button');
+  btn.textContent = 'Saved ✓';
+  setTimeout(()=>btn.textContent='Save Test', 1500);
+}
+
+// Drag and Drop
+document.querySelectorAll('.draggable-step').forEach(el => {
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('action', el.dataset.action);
+    e.dataTransfer.setData('detail', el.dataset.detail);
+    el.style.opacity='0.5';
+  });
+  el.addEventListener('dragend', () => el.style.opacity='1');
+});
+
+const stepsList = document.getElementById('stepsList');
+stepsList.addEventListener('dragover', e => { e.preventDefault(); stepsList.style.borderColor='var(--accent)'; stepsList.style.background='var(--accent-light)'; });
+stepsList.addEventListener('dragleave', () => { stepsList.style.borderColor=''; stepsList.style.background=''; });
+stepsList.addEventListener('drop', e => {
+  e.preventDefault();
+  stepsList.style.borderColor=''; stepsList.style.background='';
+  const action = e.dataTransfer.getData('action');
+  const detail = e.dataTransfer.getData('detail');
+  if (action) { steps.push({ action, detail, done: false }); renderSteps(); }
+});
+</script>
+</body>
+</html>

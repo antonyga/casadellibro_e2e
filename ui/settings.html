@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestPilot — Settings</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Settings-page specific ──────────────────────────── */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 0;
+      height: calc(100vh - var(--topbar-h));
+      overflow: hidden;
+    }
+
+    /* Settings sub-nav */
+    .settings-nav {
+      border-right: 1px solid var(--border);
+      background: var(--bg-surface);
+      padding: 16px 8px;
+      overflow-y: auto;
+    }
+    .settings-nav-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-disabled);
+      padding: 8px 12px 4px;
+    }
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .settings-nav-item:hover { background: var(--bg-app); color: var(--text-primary); }
+    .settings-nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .settings-nav-item svg { flex-shrink: 0; width: 15px; height: 15px; }
+
+    /* Settings content area */
+    .settings-content {
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+
+    /* Section */
+    .settings-section { display: none; }
+    .settings-section.active { display: block; }
+
+    .section-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-header h2 { margin-bottom: 4px; }
+    .section-header p { font-size: 0.82rem; }
+
+    /* Card */
+    .settings-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .settings-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .settings-card-header h3 { font-size: 0.88rem; }
+    .settings-card-body { padding: 20px; }
+
+    /* Row with toggle */
+    .toggle-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-row:first-child { padding-top: 0; }
+    .toggle-row-info { flex: 1; }
+    .toggle-row-label { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .toggle-row-desc { font-size: 0.75rem; color: var(--text-secondary); }
+
+    /* Environment table */
+    .env-table { width: 100%; border-collapse: collapse; }
+    .env-table th {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      color: var(--text-secondary);
+      padding: 0 0 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .env-table td { padding: 12px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .env-table tr:last-child td { border-bottom: none; }
+    .env-indicator {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 6px;
+    }
+    .env-url { font-size: 0.78rem; color: var(--text-secondary); font-family: monospace; }
+
+    /* Cron builder */
+    .cron-builder {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .cron-preset-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cron-preset {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .cron-preset:hover { border-color: var(--accent); color: var(--accent); }
+    .cron-preset.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+    .cron-fields {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .cron-field { display: flex; flex-direction: column; gap: 4px; }
+    .cron-field label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+    .cron-field input {
+      padding: 7px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: monospace;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+    .cron-field input:focus { outline: none; border-color: var(--accent); }
+
+    .cron-expression {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .cron-expr-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; flex-shrink: 0; }
+    .cron-expr-value { font-family: monospace; font-size: 0.85rem; color: var(--accent); font-weight: 700; flex: 1; }
+    .cron-human { font-size: 0.75rem; color: var(--text-secondary); font-style: italic; }
+
+    /* Calendar mini grid */
+    .cron-calendar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cal-days-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text-secondary);
+    }
+    .cal-day:hover { border-color: var(--accent); color: var(--accent); }
+    .cal-day.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-row label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); width: 50px; }
+    .time-input {
+      padding: 6px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: monospace;
+      color: var(--text-primary);
+      width: 90px;
+    }
+    .time-input:focus { outline: none; border-color: var(--accent); }
+
+    /* Schedule list */
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .schedule-item:last-child { border-bottom: none; }
+    .schedule-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+    .schedule-dot.paused { background: var(--text-disabled); }
+    .schedule-info { flex: 1; }
+    .schedule-name { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+    .schedule-meta { font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px; }
+    .schedule-next { font-size: 0.72rem; color: var(--text-secondary); }
+    .schedule-actions { display: flex; gap: 4px; }
+
+    /* Webhook items */
+    .webhook-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .webhook-item:last-child { border-bottom: none; }
+    .webhook-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .webhook-icon.slack   { background: #4a154b; color: #e01e5a; }
+    .webhook-icon.teams   { background: #464775; color: #7b83eb; }
+    .webhook-icon.email   { background: var(--accent-light); color: var(--accent); }
+    .webhook-icon.pagerduty { background: #06ac38; color: #fff; }
+    .webhook-info { flex: 1; min-width: 0; }
+    .webhook-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+    .webhook-url  { font-size: 0.72rem; color: var(--text-secondary); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+    .webhook-triggers { display: flex; gap: 4px; margin-top: 4px; }
+    .trigger-pill {
+      font-size: 0.62rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .webhook-status { flex-shrink: 0; }
+
+    /* Add webhook form */
+    .add-webhook-form {
+      background: var(--bg-app);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .add-webhook-form.open { display: flex; }
+    .webhook-type-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .webhook-type-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--bg-surface);
+    }
+    .webhook-type-card:hover { border-color: var(--accent); }
+    .webhook-type-card.selected { border-color: var(--accent); background: var(--accent-light); }
+    .webhook-type-card .wt-label { font-size: 0.72rem; font-weight: 700; margin-top: 4px; }
+    .trigger-check-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .trigger-check {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .trigger-check input { accent-color: var(--accent); }
+
+    /* API key rows */
+    .api-key-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .api-key-row:last-child { border-bottom: none; }
+    .api-key-label { font-size: 0.8rem; font-weight: 600; width: 120px; flex-shrink: 0; }
+    .api-key-value {
+      flex: 1;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .api-key-hidden { letter-spacing: 0.1em; }
+
+    /* Danger zone */
+    .danger-card {
+      border-color: var(--error);
+      background: var(--error-light);
+    }
+    .danger-card .settings-card-header { border-color: rgba(239,68,68,0.2); }
+    .danger-card h3 { color: var(--error); }
+    .danger-card p { color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    <span class="logo-text">TestPilot</span><span class="logo-badge">BETA</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Overview</span>
+    <a href="index.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="tests.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <span>Test Suites</span><span class="nav-badge">2</span>
+    </a>
+    <span class="nav-section-label">Tools</span>
+    <a href="codegen.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+      <span>AI Generator</span>
+    </a>
+    <a href="visual.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Visual Tests</span>
+    </a>
+    <span class="nav-section-label">Config</span>
+    <a href="settings.html" class="nav-item active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">QA</div>
+      <div class="user-info"><span class="user-name">QA Engineer</span><span class="user-role">casadellibro.com</span></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">Settings</h1>
+      <div class="breadcrumb"><span>casadellibro.com</span><span>/</span><span class="crumb-current">Settings</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="env-selector">
+        <select><option>🟢  Production</option><option>🟡  Staging</option><option>🔵  Pre-prod</option></select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </header>
+
+  <main class="content" style="padding:0;overflow:hidden;height:calc(100vh - var(--topbar-h));">
+    <div class="settings-layout">
+
+      <!-- Settings sub-navigation -->
+      <nav class="settings-nav">
+        <div class="settings-nav-label">Project</div>
+        <button class="settings-nav-item active" onclick="showSection('environments',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+          Environments
+        </button>
+        <button class="settings-nav-item" onclick="showSection('scheduling',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Scheduling
+        </button>
+        <button class="settings-nav-item" onclick="showSection('notifications',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          Notifications
+        </button>
+        <div class="settings-nav-label">Testing</div>
+        <button class="settings-nav-item" onclick="showSection('ecommerce',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6"/></svg>
+          E-commerce
+        </button>
+        <button class="settings-nav-item" onclick="showSection('aiconfig',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+          AI & API Keys
+        </button>
+        <button class="settings-nav-item" onclick="showSection('browsers',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+          Browsers & Devices
+        </button>
+        <div class="settings-nav-label">Account</div>
+        <button class="settings-nav-item" onclick="showSection('danger',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Danger Zone
+        </button>
+      </nav>
+
+      <!-- Settings content -->
+      <div class="settings-content">
+
+        <!-- ══ ENVIRONMENTS ══════════════════════════════════ -->
+        <div class="settings-section active" id="section-environments">
+          <div class="section-header">
+            <h2>Environments</h2>
+            <p>Manage the target URLs for each environment. The active environment is selected from the top-bar dropdown.</p>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Configured Environments</h3>
+              <button class="btn btn-secondary btn-sm" onclick="addEnvRow()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Environment
+              </button>
+            </div>
+            <div class="settings-card-body" style="padding:0 20px;">
+              <table class="env-table">
+                <thead>
+                  <tr>
+                    <th style="width:120px;">Name</th>
+                    <th>Base URL</th>
+                    <th style="width:100px;">Browser</th>
+                    <th style="width:60px;">Status</th>
+                    <th style="width:50px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="envTableBody">
+                  <tr>
+                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#10b981;"></span><strong style="font-size:0.8rem;">Production</strong></span></td>
+                    <td><span class="env-url">https://www.casadellibro.com</span></td>
+                    <td><span style="font-size:0.78rem;">Chromium, Firefox</span></td>
+                    <td><span class="badge badge-success" style="font-size:0.67rem;">Active</span></td>
+                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('production')">Edit</button></td>
+                  </tr>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#f59e0b;"></span><strong style="font-size:0.8rem;">Staging</strong></span></td>
+                    <td><span class="env-url">https://staging.casadellibro.com</span></td>
+                    <td><span style="font-size:0.78rem;">Chromium</span></td>
+                    <td><span class="badge" style="font-size:0.67rem;background:var(--bg-app);border:1px solid var(--border);color:var(--text-secondary);">Idle</span></td>
+                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('staging')">Edit</button></td>
+                  </tr>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#3b82f6;"></span><strong style="font-size:0.8rem;">Pre-prod</strong></span></td>
+                    <td><span class="env-url">https://preprod.casadellibro.com</span></td>
+                    <td><span style="font-size:0.78rem;">Chromium</span></td>
+                    <td><span class="badge" style="font-size:0.67rem;background:var(--bg-app);border:1px solid var(--border);color:var(--text-secondary);">Idle</span></td>
+                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('preprod')">Edit</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Global Defaults</h3></div>
+            <div class="settings-card-body">
+              <div class="form-group">
+                <label class="form-label">Default Timeout (ms)</label>
+                <input type="number" class="form-control" value="60000" style="width:140px;" />
+              </div>
+              <div class="form-group" style="margin-top:14px;">
+                <label class="form-label">Navigation Timeout (ms)</label>
+                <input type="number" class="form-control" value="30000" style="width:140px;" />
+              </div>
+              <div class="form-group" style="margin-top:14px;">
+                <label class="form-label">Locale</label>
+                <select class="form-control" style="width:160px;">
+                  <option selected>es-ES</option>
+                  <option>en-US</option>
+                  <option>en-GB</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SCHEDULING ════════════════════════════════════ -->
+        <div class="settings-section" id="section-scheduling">
+          <div class="section-header">
+            <h2>Scheduling</h2>
+            <p>Set up automated test runs on a cron schedule. Tests will run against the selected environment.</p>
+          </div>
+
+          <!-- Existing schedules -->
+          <div class="settings-card" style="margin-bottom:20px;">
+            <div class="settings-card-header">
+              <h3>Active Schedules</h3>
+              <span class="badge badge-success" style="font-size:0.67rem;">2 active</span>
+            </div>
+            <div class="settings-card-body" style="padding:0 20px;">
+              <div class="schedule-item">
+                <div class="schedule-dot"></div>
+                <div class="schedule-info">
+                  <div class="schedule-name">Full Regression — Production</div>
+                  <div class="schedule-meta">All test suites · Chromium + Firefox · <code style="font-size:0.7rem;background:var(--bg-app);padding:1px 4px;border-radius:3px;">0 6 * * 1-5</code></div>
+                </div>
+                <div class="schedule-next" style="text-align:right;">
+                  <div style="font-size:0.72rem;font-weight:600;color:var(--text-primary);">Mon 06:00</div>
+                  <div style="font-size:0.68rem;color:var(--text-disabled);">Next run</div>
+                </div>
+                <div class="schedule-actions">
+                  <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editSchedule(0)">Edit</button>
+                  <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;color:var(--error);" onclick="deleteSchedule(0)">Pause</button>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-dot"></div>
+                <div class="schedule-info">
+                  <div class="schedule-name">Smoke Tests — Staging</div>
+                  <div class="schedule-meta">Search + Login suites · Chromium · <code style="font-size:0.7rem;background:var(--bg-app);padding:1px 4px;border-radius:3px;">*/30 * * * *</code></div>
+                </div>
+                <div class="schedule-next" style="text-align:right;">
+                  <div style="font-size:0.72rem;font-weight:600;color:var(--text-primary);">Every 30 min</div>
+                  <div style="font-size:0.68rem;color:var(--text-disabled);">Next run</div>
+                </div>
+                <div class="schedule-actions">
+                  <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editSchedule(1)">Edit</button>
+                  <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;color:var(--error);" onclick="deleteSchedule(1)">Pause</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cron builder -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>New Schedule</h3>
+              <span style="font-size:0.72rem;color:var(--text-secondary);">Visual cron builder</span>
+            </div>
+            <div class="settings-card-body">
+              <div class="cron-builder">
+
+                <!-- Preset buttons -->
+                <div>
+                  <label class="form-label" style="margin-bottom:8px;">Quick Presets</label>
+                  <div class="cron-preset-row">
+                    <button class="cron-preset" onclick="applyPreset('every15','*/15 * * * *','Every 15 minutes',this)">Every 15 min</button>
+                    <button class="cron-preset active" onclick="applyPreset('everyHour','0 * * * *','Every hour',this)">Hourly</button>
+                    <button class="cron-preset" onclick="applyPreset('daily','0 6 * * *','Every day at 06:00',this)">Daily 06:00</button>
+                    <button class="cron-preset" onclick="applyPreset('weekdays','0 6 * * 1-5','Weekdays at 06:00',this)">Weekdays</button>
+                    <button class="cron-preset" onclick="applyPreset('custom','','Custom',this)">Custom</button>
+                  </div>
+                </div>
+
+                <!-- Day-of-week picker -->
+                <div>
+                  <label class="form-label" style="margin-bottom:8px;">Days of Week</label>
+                  <div class="cal-days-row" style="max-width:300px;">
+                    <div class="cal-day" onclick="toggleDay(this)" title="Sunday">Su</div>
+                    <div class="cal-day selected" onclick="toggleDay(this)" title="Monday">Mo</div>
+                    <div class="cal-day selected" onclick="toggleDay(this)" title="Tuesday">Tu</div>
+                    <div class="cal-day selected" onclick="toggleDay(this)" title="Wednesday">We</div>
+                    <div class="cal-day selected" onclick="toggleDay(this)" title="Thursday">Th</div>
+                    <div class="cal-day selected" onclick="toggleDay(this)" title="Friday">Fr</div>
+                    <div class="cal-day" onclick="toggleDay(this)" title="Saturday">Sa</div>
+                  </div>
+                </div>
+
+                <!-- Time picker -->
+                <div class="time-row">
+                  <label>Run at</label>
+                  <input type="time" class="time-input" value="06:00" id="scheduleTime" oninput="updateCronFromPicker()" />
+                  <span style="font-size:0.75rem;color:var(--text-secondary);">Europe/Madrid timezone</span>
+                </div>
+
+                <!-- Cron fields (advanced) -->
+                <div>
+                  <label class="form-label" style="margin-bottom:8px;">Advanced (Cron Expression)</label>
+                  <div class="cron-fields">
+                    <div class="cron-field"><label>Minute</label><input type="text" id="cf-min" value="0" oninput="updateCronExpr()" /></div>
+                    <div class="cron-field"><label>Hour</label><input type="text" id="cf-hr" value="*" oninput="updateCronExpr()" /></div>
+                    <div class="cron-field"><label>Day</label><input type="text" id="cf-dom" value="*" oninput="updateCronExpr()" /></div>
+                    <div class="cron-field"><label>Month</label><input type="text" id="cf-mon" value="*" oninput="updateCronExpr()" /></div>
+                    <div class="cron-field"><label>Weekday</label><input type="text" id="cf-dow" value="1-5" oninput="updateCronExpr()" /></div>
+                  </div>
+                </div>
+
+                <!-- Expression display -->
+                <div class="cron-expression">
+                  <span class="cron-expr-label">Cron:</span>
+                  <span class="cron-expr-value" id="cronDisplay">0 * * * 1-5</span>
+                  <span class="cron-human" id="cronHuman">Every hour on weekdays</span>
+                </div>
+
+                <!-- Suite & env selector -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                  <div class="form-group">
+                    <label class="form-label">Test Suite</label>
+                    <select class="form-control">
+                      <option>All Suites</option>
+                      <option>Search Tests</option>
+                      <option>Login Tests</option>
+                      <option>Checkout Flow</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Environment</label>
+                    <select class="form-control">
+                      <option>Production</option>
+                      <option>Staging</option>
+                      <option>Pre-prod</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <button class="btn btn-primary" onclick="createSchedule()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Create Schedule
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ NOTIFICATIONS ══════════════════════════════════ -->
+        <div class="settings-section" id="section-notifications">
+          <div class="section-header">
+            <h2>Notifications & Webhooks</h2>
+            <p>Send failure alerts to your team's communication channels via webhooks.</p>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Configured Webhooks</h3>
+              <button class="btn btn-primary btn-sm" onclick="toggleAddWebhook()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Webhook
+              </button>
+            </div>
+            <div class="settings-card-body" style="padding:0 20px;">
+              <!-- Existing webhooks -->
+              <div class="webhook-item">
+                <div class="webhook-icon slack">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5c0 .83-.67 1.5-1.5 1.5h-5C2.67 11 2 10.33 2 9.5S2.67 8 3.5 8h5c.83 0 1.5.67 1.5 1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></svg>
+                </div>
+                <div class="webhook-info">
+                  <div class="webhook-name">Slack — #qa-alerts</div>
+                  <div class="webhook-url">https://hooks.slack.com/services/T04X…/B05Y…/abcd1234efgh</div>
+                  <div class="webhook-triggers">
+                    <span class="trigger-pill">On Failure</span>
+                    <span class="trigger-pill">On Flaky</span>
+                  </div>
+                </div>
+                <div class="webhook-status">
+                  <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="testWebhook('slack')">Test</button>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;color:var(--error);" onclick="deleteWebhook('slack')">Remove</button>
+              </div>
+
+              <div class="webhook-item">
+                <div class="webhook-icon teams">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                </div>
+                <div class="webhook-info">
+                  <div class="webhook-name">Microsoft Teams — QA Channel</div>
+                  <div class="webhook-url">https://outlook.office.com/webhook/abc123/IncomingWebhook/def456…</div>
+                  <div class="webhook-triggers">
+                    <span class="trigger-pill">On Failure</span>
+                    <span class="trigger-pill">On Run Complete</span>
+                  </div>
+                </div>
+                <div class="webhook-status">
+                  <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="testWebhook('teams')">Test</button>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;color:var(--error);" onclick="deleteWebhook('teams')">Remove</button>
+              </div>
+
+              <div class="webhook-item">
+                <div class="webhook-icon email">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="webhook-info">
+                  <div class="webhook-name">Email — qa-team@casadellibro.com</div>
+                  <div class="webhook-url">SMTP via SendGrid · daily digest + on critical failure</div>
+                  <div class="webhook-triggers">
+                    <span class="trigger-pill">On Failure</span>
+                    <span class="trigger-pill">Daily Digest</span>
+                  </div>
+                </div>
+                <div class="webhook-status">
+                  <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+                </div>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="testWebhook('email')">Test</button>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;color:var(--error);" onclick="deleteWebhook('email')">Remove</button>
+              </div>
+
+              <!-- Add webhook form (collapsible) -->
+              <div class="add-webhook-form" id="addWebhookForm" style="margin-top:16px;">
+                <div>
+                  <label class="form-label" style="margin-bottom:8px;">Channel Type</label>
+                  <div class="webhook-type-grid">
+                    <div class="webhook-type-card selected" onclick="selectWebhookType(this,'slack')">
+                      <div style="font-size:18px;">💬</div>
+                      <div class="wt-label">Slack</div>
+                    </div>
+                    <div class="webhook-type-card" onclick="selectWebhookType(this,'teams')">
+                      <div style="font-size:18px;">👥</div>
+                      <div class="wt-label">MS Teams</div>
+                    </div>
+                    <div class="webhook-type-card" onclick="selectWebhookType(this,'email')">
+                      <div style="font-size:18px;">📧</div>
+                      <div class="wt-label">Email</div>
+                    </div>
+                    <div class="webhook-type-card" onclick="selectWebhookType(this,'pagerduty')">
+                      <div style="font-size:18px;">🚨</div>
+                      <div class="wt-label">PagerDuty</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Webhook URL</label>
+                  <input type="url" class="form-control" placeholder="https://hooks.slack.com/services/…" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="margin-bottom:8px;">Trigger Events</label>
+                  <div class="trigger-check-row">
+                    <label class="trigger-check"><input type="checkbox" checked />On Failure</label>
+                    <label class="trigger-check"><input type="checkbox" />On Pass</label>
+                    <label class="trigger-check"><input type="checkbox" checked />On Flaky Test</label>
+                    <label class="trigger-check"><input type="checkbox" />Run Complete</label>
+                    <label class="trigger-check"><input type="checkbox" />Daily Digest</label>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary" onclick="saveWebhook()">Add Webhook</button>
+                  <button class="btn btn-secondary" onclick="toggleAddWebhook()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification preferences -->
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Notification Preferences</h3></div>
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Alert on first failure only</div>
+                  <div class="toggle-row-desc">Send one alert per test session even if multiple tests fail. Reduces noise.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Include screenshot in alert</div>
+                  <div class="toggle-row-desc">Attach the failure screenshot to Slack / Teams messages.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Include AI error summary</div>
+                  <div class="toggle-row-desc">Attach the plain-English AI explanation of the failure to the notification.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Suppress alerts for known flaky tests</div>
+                  <div class="toggle-row-desc">Skip notification if the test has a flakiness score above 30%.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ E-COMMERCE ═════════════════════════════════════ -->
+        <div class="settings-section" id="section-ecommerce">
+          <div class="section-header">
+            <h2>E-commerce Settings</h2>
+            <p>Domain-specific configuration for casadellibro.com test automation.</p>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Payment & Checkout</h3></div>
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Mock Payments</div>
+                  <div class="toggle-row-desc">Bypass the real Redsys/Stripe gateway during checkout tests. Uses a configured test card number and always returns a successful charge.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="mockPaymentsToggle" onchange="onMockPaymentsChange(this)" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div id="mockPaymentsConfig" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                  <div class="form-group">
+                    <label class="form-label">Test Card Number</label>
+                    <input type="text" class="form-control" value="4242 4242 4242 4242" style="font-family:monospace;" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Expiry / CVC</label>
+                    <input type="text" class="form-control" value="12/29 · 123" style="font-family:monospace;" />
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                  <label class="form-label">Mock Response</label>
+                  <select class="form-control" style="width:200px;">
+                    <option>Always Succeed</option>
+                    <option>Always Decline</option>
+                    <option>Insufficient Funds</option>
+                    <option>Network Error</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="toggle-row" style="margin-top:4px;">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Skip real order placement</div>
+                  <div class="toggle-row-desc">Halt checkout at the payment confirmation step — never submit a real order.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Cookie & Consent Handling</h3></div>
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Auto-accept OneTrust cookie banner</div>
+                  <div class="toggle-row-desc">Automatically clicks <code style="font-size:0.72rem;background:var(--bg-app);padding:1px 4px;border-radius:3px;">#onetrust-accept-btn-handler</code> at the start of every test.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Persist login state across tests</div>
+                  <div class="toggle-row-desc">Reuse saved browser storage state (cookies + localStorage) to skip the login step for authenticated tests.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Search Widget</h3></div>
+            <div class="settings-card-body">
+              <div class="form-group">
+                <label class="form-label">Search Input Selector</label>
+                <input type="text" class="form-control" value="#empathy-search" style="font-family:monospace;" />
+              </div>
+              <div class="form-group" style="margin-top:10px;">
+                <label class="form-label">Result Card Selector</label>
+                <input type="text" class="form-control" value=".x-root-container article.x-result" style="font-family:monospace;" />
+              </div>
+              <div class="toggle-row" style="margin-top:8px;">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Shadow DOM piercing</div>
+                  <div class="toggle-row-desc">Playwright auto-pierces the Empathy X widget shadow root. Keep enabled.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ AI & API KEYS ══════════════════════════════════ -->
+        <div class="settings-section" id="section-aiconfig">
+          <div class="section-header">
+            <h2>AI & API Keys</h2>
+            <p>Configure the AI services used for test generation, semantic assertions, and error summarisation.</p>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>API Credentials</h3></div>
+            <div class="settings-card-body" style="padding:0 20px;">
+              <div class="api-key-row">
+                <span class="api-key-label">OpenAI</span>
+                <span class="api-key-value api-key-hidden">sk-proj-••••••••••••••••••••••••••••••••••••••••••••</span>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="editApiKey('openai')">Change</button>
+              </div>
+              <div class="api-key-row">
+                <span class="api-key-label">Anthropic</span>
+                <span class="api-key-value" style="color:var(--text-disabled);font-style:italic;font-family:var(--font-body);">Not configured</span>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="editApiKey('anthropic')">Add</button>
+              </div>
+              <div class="api-key-row">
+                <span class="api-key-label">SendGrid</span>
+                <span class="api-key-value api-key-hidden">SG.••••••••••••••••••••••••••••••••••••••••••••••••</span>
+                <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="editApiKey('sendgrid')">Change</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>AI Behaviour</h3></div>
+            <div class="settings-card-body">
+              <div class="form-group">
+                <label class="form-label">AI Model</label>
+                <select class="form-control" style="width:240px;">
+                  <option>gpt-4o (recommended)</option>
+                  <option>gpt-4-turbo</option>
+                  <option>gpt-3.5-turbo</option>
+                  <option>claude-sonnet-4-6</option>
+                  <option>claude-haiku-4-5</option>
+                </select>
+              </div>
+              <div class="toggle-row" style="margin-top:14px;">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Semantic assertions</div>
+                  <div class="toggle-row-desc">Use the AI to verify intent rather than exact text (e.g., confirm search results are thematically relevant).</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">AI self-healing</div>
+                  <div class="toggle-row-desc">When a selector fails, ask the AI to suggest alternative locators before failing the test.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">AI error summaries</div>
+                  <div class="toggle-row-desc">Pass stack traces through the AI to produce plain-English failure explanations in reports.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Fail-safe mode</div>
+                  <div class="toggle-row-desc">If the AI API is unavailable, warn in the report but do not fail the test suite.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ BROWSERS & DEVICES ══════════════════════════════ -->
+        <div class="settings-section" id="section-browsers">
+          <div class="section-header">
+            <h2>Browsers & Devices</h2>
+            <p>Select which browsers and device viewports to include in test runs.</p>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Desktop Browsers</h3></div>
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Chromium</div>
+                  <div class="toggle-row-desc">Google Chrome engine — primary browser for all tests.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Firefox</div>
+                  <div class="toggle-row-desc">Mozilla Firefox — use <code style="font-size:0.72rem;background:var(--bg-app);padding:1px 4px;border-radius:3px;">domcontentloaded</code> wait strategy (SPA compatibility).</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">WebKit (Safari)</div>
+                  <div class="toggle-row-desc">Apple Safari engine — optional for cross-browser coverage.</div>
+                </div>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-header"><h3>Mobile Emulation</h3></div>
+            <div class="settings-card-body">
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">iPhone 14 Pro</div>
+                  <div class="toggle-row-desc">390×844 · Safari WebKit · Touch events</div>
+                </div>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">Pixel 7</div>
+                  <div class="toggle-row-desc">412×915 · Chromium · Touch events</div>
+                </div>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-row-info">
+                  <div class="toggle-row-label">iPad Pro 12.9"</div>
+                  <div class="toggle-row-desc">1024×1366 · Chromium · Tablet viewport</div>
+                </div>
+                <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ DANGER ZONE ═════════════════════════════════════ -->
+        <div class="settings-section" id="section-danger">
+          <div class="section-header">
+            <h2>Danger Zone</h2>
+            <p>Irreversible actions. Please read each description carefully before proceeding.</p>
+          </div>
+
+          <div class="settings-card danger-card">
+            <div class="settings-card-header">
+              <h3>Destructive Actions</h3>
+            </div>
+            <div class="settings-card-body" style="display:flex;flex-direction:column;gap:20px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+                <div>
+                  <div style="font-size:0.83rem;font-weight:700;color:var(--text-primary);margin-bottom:3px;">Reset all visual baselines</div>
+                  <p style="font-size:0.75rem;color:#b91c1c;">Deletes all approved screenshots. Every test will show as "New" on the next run and require re-approval.</p>
+                </div>
+                <button class="btn" style="background:var(--error);color:#fff;flex-shrink:0;" onclick="confirmDanger('Reset all visual baselines?', 'resetBaselines')">Reset Baselines</button>
+              </div>
+              <div style="height:1px;background:rgba(239,68,68,0.2);"></div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+                <div>
+                  <div style="font-size:0.83rem;font-weight:700;color:var(--text-primary);margin-bottom:3px;">Delete all test history</div>
+                  <p style="font-size:0.75rem;color:#b91c1c;">Permanently deletes all run history, logs, screenshots, and trace files. This cannot be undone.</p>
+                </div>
+                <button class="btn" style="background:var(--error);color:#fff;flex-shrink:0;" onclick="confirmDanger('Delete all test history?', 'deleteHistory')">Delete History</button>
+              </div>
+              <div style="height:1px;background:rgba(239,68,68,0.2);"></div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+                <div>
+                  <div style="font-size:0.83rem;font-weight:700;color:var(--text-primary);margin-bottom:3px;">Reset project to defaults</div>
+                  <p style="font-size:0.75rem;color:#b91c1c;">Deletes all schedules, webhooks, environment configs, and API keys. Resets to a blank project state.</p>
+                </div>
+                <button class="btn" style="background:var(--error);color:#fff;flex-shrink:0;" onclick="confirmDanger('Reset entire project?', 'resetProject')">Reset Project</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /settings-content -->
+    </div>
+  </main>
+</div>
+
+<!-- Confirm danger modal -->
+<div class="modal-overlay" id="dangerModal" onclick="closeDangerModal(event)">
+  <div class="modal" style="max-width:400px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 style="color:var(--error);">Confirm Action</h3>
+      <button class="modal-close" onclick="closeDangerModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="dangerMessage" style="margin-bottom:12px;color:var(--text-primary);font-size:0.85rem;"></p>
+      <p style="font-size:0.78rem;">This action is <strong>irreversible</strong>. Type <code style="font-size:0.75rem;background:var(--bg-app);padding:1px 5px;border-radius:3px;">confirm</code> to proceed:</p>
+      <input type="text" class="form-control" id="dangerConfirmInput" placeholder='Type "confirm"' style="margin-top:10px;" oninput="checkDangerConfirm(this)" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeDangerModal()">Cancel</button>
+      <button class="btn" id="dangerConfirmBtn" style="background:var(--error);color:#fff;opacity:0.4;pointer-events:none;" onclick="executeDanger()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Section switching ────────────────────────────────────── */
+  function showSection(id, btn) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  /* ── Save all ────────────────────────────────────────────── */
+  function saveAll() {
+    showToast('Settings saved successfully.', 'success');
+  }
+
+  /* ── Environment ─────────────────────────────────────────── */
+  function editEnv(name) { showToast('Editing ' + name + ' environment…', 'info'); }
+  function addEnvRow() { showToast('Add environment — coming soon.', 'info'); }
+
+  /* ── Cron builder ────────────────────────────────────────── */
+  const humanMap = {
+    '*/15 * * * *': 'Every 15 minutes',
+    '0 * * * *':    'Every hour',
+    '0 6 * * *':    'Every day at 06:00',
+    '0 6 * * 1-5':  'Weekdays at 06:00',
+  };
+
+  function applyPreset(key, expr, human, btn) {
+    document.querySelectorAll('.cron-preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (!expr) return;
+    const parts = expr.split(' ');
+    document.getElementById('cf-min').value = parts[0];
+    document.getElementById('cf-hr').value  = parts[1];
+    document.getElementById('cf-dom').value = parts[2];
+    document.getElementById('cf-mon').value = parts[3];
+    document.getElementById('cf-dow').value = parts[4];
+    updateCronExpr();
+  }
+
+  function updateCronExpr() {
+    const min = document.getElementById('cf-min').value || '*';
+    const hr  = document.getElementById('cf-hr').value  || '*';
+    const dom = document.getElementById('cf-dom').value || '*';
+    const mon = document.getElementById('cf-mon').value || '*';
+    const dow = document.getElementById('cf-dow').value || '*';
+    const expr = `${min} ${hr} ${dom} ${mon} ${dow}`;
+    document.getElementById('cronDisplay').textContent = expr;
+    document.getElementById('cronHuman').textContent = humanMap[expr] || 'Custom schedule';
+  }
+
+  function updateCronFromPicker() {
+    const time = document.getElementById('scheduleTime').value;
+    if (!time) return;
+    const [h, m] = time.split(':');
+    document.getElementById('cf-min').value = parseInt(m, 10);
+    document.getElementById('cf-hr').value  = parseInt(h, 10);
+    updateCronExpr();
+  }
+
+  function toggleDay(el) { el.classList.toggle('selected'); updateCronFromDays(); }
+
+  function updateCronFromDays() {
+    const days = [...document.querySelectorAll('.cal-day')];
+    const dayMap = ['0','1','2','3','4','5','6'];
+    const selected = days.map((d,i) => d.classList.contains('selected') ? dayMap[i] : null).filter(Boolean);
+    document.getElementById('cf-dow').value = selected.length === 7 ? '*' : selected.join(',');
+    updateCronExpr();
+  }
+
+  function createSchedule() {
+    showToast('Schedule created and activated.', 'success');
+  }
+
+  function editSchedule(i)   { showToast('Editing schedule ' + (i+1) + '…', 'info'); }
+  function deleteSchedule(i) { showToast('Schedule paused.', 'info'); }
+
+  /* ── Webhooks ────────────────────────────────────────────── */
+  function toggleAddWebhook() {
+    const form = document.getElementById('addWebhookForm');
+    form.classList.toggle('open');
+  }
+  function selectWebhookType(el, type) {
+    document.querySelectorAll('.webhook-type-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function saveWebhook()       { toggleAddWebhook(); showToast('Webhook added successfully.', 'success'); }
+  function testWebhook(type)   { showToast('Test payload sent to ' + type + '.', 'info'); }
+  function deleteWebhook(type) { showToast(type + ' webhook removed.', 'error'); }
+
+  /* ── Mock Payments ───────────────────────────────────────── */
+  function onMockPaymentsChange(cb) {
+    document.getElementById('mockPaymentsConfig').style.display = cb.checked ? '' : 'none';
+  }
+
+  /* ── API Keys ────────────────────────────────────────────── */
+  function editApiKey(name) { showToast('Enter your ' + name + ' API key in the modal — coming soon.', 'info'); }
+
+  /* ── Danger zone ─────────────────────────────────────────── */
+  let pendingDangerAction = null;
+
+  function confirmDanger(msg, action) {
+    pendingDangerAction = action;
+    document.getElementById('dangerMessage').textContent = msg;
+    document.getElementById('dangerConfirmInput').value = '';
+    document.getElementById('dangerConfirmBtn').style.opacity = '0.4';
+    document.getElementById('dangerConfirmBtn').style.pointerEvents = 'none';
+    document.getElementById('dangerModal').classList.add('active');
+  }
+  function closeDangerModal(e) {
+    if (!e || e.target === document.getElementById('dangerModal'))
+      document.getElementById('dangerModal').classList.remove('active');
+  }
+  function checkDangerConfirm(input) {
+    const ok = input.value.toLowerCase() === 'confirm';
+    document.getElementById('dangerConfirmBtn').style.opacity = ok ? '1' : '0.4';
+    document.getElementById('dangerConfirmBtn').style.pointerEvents = ok ? '' : 'none';
+  }
+  function executeDanger() {
+    document.getElementById('dangerModal').classList.remove('active');
+    showToast('Action executed: ' + pendingDangerAction, 'error');
+    pendingDangerAction = null;
+  }
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    const colors = { success: 'var(--success)', error: 'var(--error)', info: 'var(--accent)', running: 'var(--running)' };
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:0.8rem;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);max-width:340px;`;
+    t.style.background = colors[type] || colors.info;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+  }
+</script>
+</body>
+</html>

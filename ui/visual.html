@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TestPilot — Visual Tests</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Visual-page specific ─────────────────────────────── */
+    .visual-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      height: calc(100vh - var(--topbar-h));
+      overflow: hidden;
+    }
+
+    /* Left panel — test list */
+    .visual-list-panel {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-surface);
+      overflow: hidden;
+    }
+    .visual-list-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .visual-list-header h3 { font-size: 0.9rem; }
+    .visual-list-scroll { flex: 1; overflow-y: auto; padding: 8px; }
+
+    .visual-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      margin-bottom: 4px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .visual-item:hover { background: var(--bg-app); }
+    .visual-item.active {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .visual-item-thumb {
+      width: 44px;
+      height: 32px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-disabled);
+      font-size: 10px;
+      overflow: hidden;
+    }
+    .visual-item-thumb svg { width: 16px; height: 16px; }
+    .visual-item-info { flex: 1; min-width: 0; }
+    .visual-item-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .visual-item-meta {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+    .diff-pill {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 99px;
+      flex-shrink: 0;
+      letter-spacing: 0.01em;
+    }
+    .diff-pill.none { background: var(--success-light); color: var(--success); }
+    .diff-pill.low  { background: var(--warning-light); color: var(--warning); }
+    .diff-pill.high { background: var(--error-light);   color: var(--error); }
+
+    /* Right panel — compare view */
+    .visual-compare-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-app);
+      overflow: hidden;
+    }
+    .compare-toolbar {
+      padding: 12px 20px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .compare-info { display: flex; flex-direction: column; gap: 2px; }
+    .compare-title { font-size: 0.9rem; font-weight: 700; font-family: var(--font-heading); }
+    .compare-meta { font-size: 0.72rem; color: var(--text-secondary); }
+    .compare-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* View-mode tabs */
+    .view-tabs {
+      display: flex;
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+      gap: 2px;
+    }
+    .view-tab {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .view-tab.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-xs);
+    }
+
+    /* Swipe container */
+    .compare-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .swipe-wrapper {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #1a1a2e;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 16/9;
+      user-select: none;
+    }
+
+    /* Baseline image (full width, underneath) */
+    .swipe-baseline {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Actual image (clipped from left by slider) */
+    .swipe-actual {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      clip-path: inset(0 0 0 50%);
+      transition: clip-path 0.01s;
+    }
+
+    /* Divider line + handle */
+    .swipe-divider {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100%;
+      background: #fff;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .swipe-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 11;
+    }
+    .swipe-handle svg { color: #374151; }
+
+    /* Labels */
+    .swipe-label {
+      position: absolute;
+      top: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 12;
+      pointer-events: none;
+    }
+    .swipe-label-baseline { left: 12px; background: rgba(0,0,0,0.5); color: #fff; }
+    .swipe-label-actual   { right: 12px; background: rgba(239,68,68,0.8); color: #fff; }
+
+    /* Range slider overlay */
+    .swipe-range {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: ew-resize;
+      z-index: 20;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+    }
+
+    /* Side-by-side view */
+    .sidebyside-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .sbs-pane {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #1a1a2e;
+    }
+    .sbs-label {
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.4);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .sbs-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Diff highlights view */
+    .diff-view {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #1a1a2e;
+      position: relative;
+    }
+    .diff-view-img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; }
+    .diff-highlight {
+      position: absolute;
+      border: 2px solid var(--error);
+      background: rgba(239,68,68,0.15);
+      border-radius: 2px;
+    }
+
+    /* Diff stats bar */
+    .diff-stats {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .diff-stat { display: flex; flex-direction: column; gap: 2px; }
+    .diff-stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); font-weight: 600; }
+    .diff-stat-value { font-size: 1.05rem; font-weight: 700; font-family: var(--font-heading); }
+    .diff-stat-value.error { color: var(--error); }
+    .diff-stat-value.warning { color: var(--warning); }
+    .diff-stat-value.success { color: var(--success); }
+    .diff-divider { width: 1px; height: 32px; background: var(--border); }
+
+    .diff-progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-app);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .diff-progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--error);
+      transition: width 0.4s ease;
+    }
+
+    /* Approve / Reject */
+    .btn-approve {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .btn-approve:hover { opacity: 0.88; }
+    .btn-reject {
+      background: var(--error-light);
+      color: var(--error);
+      border: 1px solid var(--error);
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-reject:hover { background: var(--error); color: #fff; }
+
+    /* Empty / approved state */
+    .compare-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-secondary);
+    }
+    .compare-empty svg { width: 40px; height: 40px; opacity: 0.3; }
+    .compare-empty p { font-size: 0.85rem; }
+
+    /* Approved badge overlay */
+    .approved-banner {
+      background: var(--success-light);
+      border: 1px solid var(--success);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    <span class="logo-text">TestPilot</span><span class="logo-badge">BETA</span>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Overview</span>
+    <a href="index.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="tests.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <span>Test Suites</span><span class="nav-badge">2</span>
+    </a>
+    <span class="nav-section-label">Tools</span>
+    <a href="codegen.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
+      <span>AI Generator</span>
+    </a>
+    <a href="visual.html" class="nav-item active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Visual Tests</span>
+    </a>
+    <span class="nav-section-label">Config</span>
+    <a href="settings.html" class="nav-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">QA</div>
+      <div class="user-info"><span class="user-name">QA Engineer</span><span class="user-role">casadellibro.com</span></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-layout">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">Visual Tests</h1>
+      <div class="breadcrumb"><span>casadellibro.com</span><span>/</span><span class="crumb-current">Visual Tests</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="env-selector">
+        <select><option>🟢  Production</option><option>🟡  Staging</option><option>🔵  Pre-prod</option></select>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="runAllVisual()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
+        Run All
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="approveAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve All Passing
+      </button>
+    </div>
+  </header>
+
+  <main class="content" style="padding:0; overflow:hidden; height:calc(100vh - var(--topbar-h));">
+    <div class="visual-layout">
+
+      <!-- LEFT: Test list -->
+      <div class="visual-list-panel">
+        <div class="visual-list-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <h3>Snapshots</h3>
+            <span style="font-size:0.72rem;color:var(--text-secondary);">3 diffs found</span>
+          </div>
+          <div class="search-bar" style="--height:32px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Filter snapshots…" style="font-size:0.78rem;" />
+          </div>
+          <!-- Summary bar -->
+          <div style="display:flex;gap:8px;">
+            <span class="badge badge-success" style="font-size:0.67rem;">5 approved</span>
+            <span class="badge badge-error" style="font-size:0.67rem;">3 diffs</span>
+            <span class="badge" style="font-size:0.67rem;background:var(--bg-app);color:var(--text-secondary);border:1px solid var(--border);">1 new</span>
+          </div>
+        </div>
+
+        <div class="visual-list-scroll" id="visualList">
+
+          <!-- Diff item — HIGH -->
+          <div class="visual-item active" onclick="selectItem(this,'homepage-hero','Homepage — Hero Banner','3.2% diff · 847 px changed','high','2.1s')" data-id="homepage-hero">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Homepage — Hero Banner</div>
+              <div class="visual-item-meta">search.spec.ts · 2 min ago</div>
+            </div>
+            <span class="diff-pill high">3.2%</span>
+          </div>
+
+          <!-- Diff item — LOW -->
+          <div class="visual-item" onclick="selectItem(this,'cart-total','Cart — Price Total','0.4% diff · 62 px changed','low','1.8s')" data-id="cart-total">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Cart — Price Total</div>
+              <div class="visual-item-meta">login.spec.ts · 2 min ago</div>
+            </div>
+            <span class="diff-pill low">0.4%</span>
+          </div>
+
+          <!-- Diff item — HIGH -->
+          <div class="visual-item" onclick="selectItem(this,'search-results','Search — Results Grid','5.8% diff · 2,104 px changed','high','3.1s')" data-id="search-results">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Search — Results Grid</div>
+              <div class="visual-item-meta">search.spec.ts · 2 min ago</div>
+            </div>
+            <span class="diff-pill high">5.8%</span>
+          </div>
+
+          <div style="height:1px;background:var(--border);margin:8px 4px;"></div>
+          <div style="padding:4px 8px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-disabled);font-weight:700;">Approved</div>
+
+          <!-- Approved items -->
+          <div class="visual-item" onclick="selectItem(this,'nav-header','Nav — Header','Approved','none','0.9s')" data-id="nav-header">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Nav — Header</div>
+              <div class="visual-item-meta">search.spec.ts · approved</div>
+            </div>
+            <span class="diff-pill none">0%</span>
+          </div>
+
+          <div class="visual-item" onclick="selectItem(this,'product-detail','Product — Detail Page','Approved','none','1.2s')" data-id="product-detail">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Product — Detail Page</div>
+              <div class="visual-item-meta">login.spec.ts · approved</div>
+            </div>
+            <span class="diff-pill none">0%</span>
+          </div>
+
+          <div class="visual-item" onclick="selectItem(this,'login-form','Login — Form','Approved','none','0.7s')" data-id="login-form">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Login — Form</div>
+              <div class="visual-item-meta">login.spec.ts · approved</div>
+            </div>
+            <span class="diff-pill none">0%</span>
+          </div>
+
+          <div class="visual-item" onclick="selectItem(this,'footer','Footer — Complete','Approved','none','0.5s')" data-id="footer">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Footer — Complete</div>
+              <div class="visual-item-meta">search.spec.ts · approved</div>
+            </div>
+            <span class="diff-pill none">0%</span>
+          </div>
+
+          <div class="visual-item" onclick="selectItem(this,'404-page','Error — 404 Page','Approved','none','0.6s')" data-id="404-page">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Error — 404 Page</div>
+              <div class="visual-item-meta">search.spec.ts · approved</div>
+            </div>
+            <span class="diff-pill none">0%</span>
+          </div>
+
+          <!-- New (unreviewed) -->
+          <div style="height:1px;background:var(--border);margin:8px 4px;"></div>
+          <div style="padding:4px 8px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-disabled);font-weight:700;">New</div>
+
+          <div class="visual-item" onclick="selectItem(this,'wishlist-new','Wishlist — New Page','New snapshot · no baseline','new','—')" data-id="wishlist-new">
+            <div class="visual-item-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </div>
+            <div class="visual-item-info">
+              <div class="visual-item-name">Wishlist — New Page</div>
+              <div class="visual-item-meta">login.spec.ts · first capture</div>
+            </div>
+            <span class="diff-pill low" style="background:var(--running-light);color:var(--running);">NEW</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Compare panel -->
+      <div class="visual-compare-panel" id="comparePanel">
+
+        <div class="compare-toolbar">
+          <div class="compare-info">
+            <span class="compare-title" id="compareTitle">Homepage — Hero Banner</span>
+            <span class="compare-meta" id="compareMeta">3.2% diff · 847 px changed · captured in 2.1s</span>
+          </div>
+          <div class="compare-actions">
+            <div class="view-tabs">
+              <button class="view-tab active" onclick="setViewMode('swipe',this)">Swipe</button>
+              <button class="view-tab" onclick="setViewMode('side',this)">Side by Side</button>
+              <button class="view-tab" onclick="setViewMode('diff',this)">Diff Overlay</button>
+            </div>
+            <button class="btn-reject" id="rejectBtn" onclick="rejectCurrent()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Reject
+            </button>
+            <button class="btn-approve" id="approveBtn" onclick="approveCurrent()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Approve
+            </button>
+          </div>
+        </div>
+
+        <div class="compare-body" id="compareBody">
+
+          <!-- ── SWIPE VIEW (default) ── -->
+          <div id="swipeView">
+            <div class="swipe-wrapper" id="swipeWrap">
+              <!-- Baseline (expected) screenshot — placeholder gradient -->
+              <div class="swipe-baseline" style="background:linear-gradient(135deg,#e0e7ff 0%,#c7d2fe 40%,#a5b4fc 100%);display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;color:#4338CA;opacity:0.6;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  <div style="margin-top:8px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;">BASELINE</div>
+                </div>
+              </div>
+              <!-- Actual screenshot — placeholder with difference indicators -->
+              <div class="swipe-actual" id="swipeActual" style="background:linear-gradient(135deg,#fce7f3 0%,#fbcfe8 40%,#f9a8d4 100%);display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;color:#be185d;opacity:0.6;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="18" cy="5" r="3" fill="#ef4444" stroke="none" style="opacity:0.8"/></svg>
+                  <div style="margin-top:8px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;">ACTUAL</div>
+                </div>
+              </div>
+              <!-- Divider -->
+              <div class="swipe-divider" id="swipeDivider"></div>
+              <div class="swipe-handle" id="swipeHandle">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/><polyline points="12 19 5 12 12 5"/></svg>
+              </div>
+              <!-- Labels -->
+              <span class="swipe-label swipe-label-baseline">Baseline</span>
+              <span class="swipe-label swipe-label-actual">Actual</span>
+              <!-- Invisible range input for drag -->
+              <input type="range" class="swipe-range" id="swipeRange" min="0" max="100" value="50" oninput="onSwipe(this.value)" />
+            </div>
+            <p style="text-align:center;font-size:0.72rem;color:var(--text-secondary);margin-top:6px;">
+              Drag the slider to compare baseline vs. actual screenshot
+            </p>
+          </div>
+
+          <!-- ── SIDE BY SIDE VIEW (hidden by default) ── -->
+          <div id="sideView" style="display:none;">
+            <div class="sidebyside-view">
+              <div class="sbs-pane">
+                <div class="sbs-label">Expected (Baseline)</div>
+                <div class="sbs-img" style="background:linear-gradient(135deg,#e0e7ff,#a5b4fc);display:flex;align-items:center;justify-content:center;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="1" opacity="0.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                </div>
+              </div>
+              <div class="sbs-pane">
+                <div class="sbs-label" style="background:rgba(239,68,68,0.5);">Actual (Current Run)</div>
+                <div class="sbs-img" style="background:linear-gradient(135deg,#fce7f3,#f9a8d4);display:flex;align-items:center;justify-content:center;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1" opacity="0.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="18" cy="5" r="3" fill="#ef4444" stroke="none"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── DIFF OVERLAY VIEW (hidden by default) ── -->
+          <div id="diffView" style="display:none;">
+            <div class="diff-view">
+              <div class="diff-view-img" style="background:linear-gradient(135deg,#e0e7ff,#a5b4fc);display:flex;align-items:center;justify-content:center;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="1" opacity="0.4"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              </div>
+              <!-- Highlighted diff regions (positioned over the screenshot) -->
+              <div class="diff-highlight" style="top:8%;left:60%;width:22%;height:18%;"></div>
+              <div class="diff-highlight" style="top:50%;left:5%;width:30%;height:12%;"></div>
+              <div class="diff-highlight" style="top:72%;left:40%;width:15%;height:20%;"></div>
+            </div>
+            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:6px;">Red boxes highlight pixel differences between baseline and actual.</p>
+          </div>
+
+          <!-- Diff stats -->
+          <div class="diff-stats" id="diffStats">
+            <div class="diff-stat">
+              <span class="diff-stat-label">Diff %</span>
+              <span class="diff-stat-value error" id="statDiff">3.2%</span>
+            </div>
+            <div class="diff-divider"></div>
+            <div class="diff-stat">
+              <span class="diff-stat-label">Changed Pixels</span>
+              <span class="diff-stat-value warning" id="statPx">847</span>
+            </div>
+            <div class="diff-divider"></div>
+            <div class="diff-stat">
+              <span class="diff-stat-label">Threshold</span>
+              <span class="diff-stat-value" id="statThreshold">0.1%</span>
+            </div>
+            <div class="diff-divider"></div>
+            <div class="diff-stat">
+              <span class="diff-stat-label">Capture Time</span>
+              <span class="diff-stat-value success" id="statTime">2.1s</span>
+            </div>
+            <div class="diff-divider"></div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);font-weight:600;">Pixel coverage</span>
+                <span style="font-size:0.72rem;color:var(--error);font-weight:700;" id="statCoverage">3.2% affected</span>
+              </div>
+              <div class="diff-progress-bar">
+                <div class="diff-progress-fill" id="diffFill" style="width:3.2%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approved banner (shown after approval) -->
+          <div class="approved-banner" id="approvedBanner" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Baseline updated — this snapshot is now the new reference.
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Enable Visual Check modal (triggered from Test Suites) -->
+<div class="modal-overlay" id="visualToggleModal" onclick="closeVisualModal(event)">
+  <div class="modal" style="max-width:460px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Enable Visual Check</h3>
+      <button class="modal-close" onclick="closeVisualModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:16px;">Configure visual regression checks for this test suite. Screenshots will be captured at marked steps and compared against the approved baseline.</p>
+
+      <div class="form-group">
+        <label class="form-label">Diff Threshold (%)</label>
+        <input type="number" class="form-control" value="0.1" min="0" max="10" step="0.1" style="width:120px;" />
+        <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:4px;">Differences below this % will be ignored (anti-aliasing tolerance).</p>
+      </div>
+
+      <div class="form-group" style="margin-top:14px;">
+        <label class="form-label">Capture mode</label>
+        <select class="form-control">
+          <option>Full page screenshot</option>
+          <option>Viewport only</option>
+          <option>Element snapshot</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-top:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <label class="form-label">Compare on CI</label>
+            <p style="font-size:0.72rem;color:var(--text-secondary);">Fail the CI pipeline when diffs exceed threshold.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <label class="form-label">Auto-approve on pass</label>
+            <p style="font-size:0.72rem;color:var(--text-secondary);">Automatically set baseline when diff is 0%.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeVisualModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVisualSettings()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Enable Visual Check
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── State ─────────────────────────────────────────────── */
+  let currentItem = { id: 'homepage-hero', diffType: 'high', title: 'Homepage — Hero Banner' };
+  let currentView = 'swipe';
+  const approvedItems = new Set();
+
+  /* ── Item selection ─────────────────────────────────────── */
+  function selectItem(el, id, title, meta, diffType, time) {
+    document.querySelectorAll('.visual-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    currentItem = { id, diffType, title };
+
+    document.getElementById('compareTitle').textContent = title;
+
+    if (approvedItems.has(id)) {
+      showApproved();
+      document.getElementById('compareMeta').textContent = 'Approved baseline';
+      return;
+    }
+
+    document.getElementById('compareMeta').textContent = meta + (time !== '—' ? ' · captured in ' + time : '');
+    document.getElementById('approvedBanner').style.display = 'none';
+    document.getElementById('approveBtn').style.display = '';
+    document.getElementById('rejectBtn').style.display = '';
+
+    // Update stats
+    const pct = diffType === 'high' ? (id === 'search-results' ? '5.8' : '3.2') : diffType === 'low' ? '0.4' : '0';
+    const px  = diffType === 'high' ? (id === 'search-results' ? '2,104' : '847') : diffType === 'low' ? '62' : '0';
+    document.getElementById('statDiff').textContent = pct + '%';
+    document.getElementById('statDiff').className = 'diff-stat-value ' + (parseFloat(pct) > 1 ? 'error' : parseFloat(pct) > 0 ? 'warning' : 'success');
+    document.getElementById('statPx').textContent = px;
+    document.getElementById('statPx').className = 'diff-stat-value ' + (parseInt(px) > 100 ? 'warning' : 'success');
+    document.getElementById('statTime').textContent = time;
+    document.getElementById('statCoverage').textContent = pct + '% affected';
+    document.getElementById('diffFill').style.width = Math.min(parseFloat(pct) * 10, 100) + '%';
+    document.getElementById('diffStats').style.display = '';
+  }
+
+  function showApproved() {
+    document.getElementById('approvedBanner').style.display = 'flex';
+    document.getElementById('approveBtn').style.display = 'none';
+    document.getElementById('rejectBtn').style.display = 'none';
+    document.getElementById('diffStats').style.display = 'none';
+  }
+
+  /* ── Swipe slider ───────────────────────────────────────── */
+  function onSwipe(val) {
+    const pct = parseInt(val);
+    document.getElementById('swipeActual').style.clipPath = `inset(0 0 0 ${pct}%)`;
+    document.getElementById('swipeDivider').style.left = pct + '%';
+    document.getElementById('swipeHandle').style.left = pct + '%';
+  }
+
+  /* ── View modes ─────────────────────────────────────────── */
+  function setViewMode(mode, btn) {
+    currentView = mode;
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('swipeView').style.display = mode === 'swipe' ? '' : 'none';
+    document.getElementById('sideView').style.display  = mode === 'side'  ? '' : 'none';
+    document.getElementById('diffView').style.display  = mode === 'diff'  ? '' : 'none';
+  }
+
+  /* ── Approve / Reject ───────────────────────────────────── */
+  function approveCurrent() {
+    approvedItems.add(currentItem.id);
+    showApproved();
+    // update the list item badge
+    const listItem = document.querySelector(`[data-id="${currentItem.id}"]`);
+    if (listItem) {
+      const pill = listItem.querySelector('.diff-pill');
+      if (pill) { pill.className = 'diff-pill none'; pill.textContent = '0%'; }
+    }
+    showToast('Baseline updated for: ' + currentItem.title, 'success');
+  }
+
+  function rejectCurrent() {
+    showToast('Snapshot rejected — flagged for developer review.', 'error');
+  }
+
+  function approveAll() {
+    document.querySelectorAll('.visual-item').forEach(item => {
+      const id = item.dataset.id;
+      approvedItems.add(id);
+      const pill = item.querySelector('.diff-pill');
+      if (pill) { pill.className = 'diff-pill none'; pill.textContent = '0%'; }
+    });
+    showToast('All passing snapshots approved and baselines updated.', 'success');
+  }
+
+  function runAllVisual() {
+    showToast('Visual regression run started…', 'running');
+  }
+
+  /* ── Visual toggle modal ────────────────────────────────── */
+  function openVisualModal() {
+    document.getElementById('visualToggleModal').classList.add('active');
+  }
+  function closeVisualModal(e) {
+    if (!e || e.target === document.getElementById('visualToggleModal'))
+      document.getElementById('visualToggleModal').classList.remove('active');
+  }
+  function saveVisualSettings() {
+    document.getElementById('visualToggleModal').classList.remove('active');
+    showToast('Visual check enabled with selected settings.', 'success');
+  }
+
+  /* ── Toast helper ───────────────────────────────────────── */
+  function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:0.8rem;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:fadeIn 0.2s ease;max-width:340px;`;
+    t.style.background = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--running)';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+  }
+
+  /* ── Keyboard shortcuts ─────────────────────────────────── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'a' || e.key === 'A') approveCurrent();
+    if (e.key === 'r' || e.key === 'R') rejectCurrent();
+  });
+</script>
+</body>
+</html>
