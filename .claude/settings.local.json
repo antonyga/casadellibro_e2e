@@ -6,7 +6,8 @@
       "Bash(npm install:*)",
       "Bash(npx playwright install:*)",
       "Bash(npx playwright test:*)",
-      "Bash(node inspect.js:*)"
+      "Bash(node inspect.js:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")"
     ]
   }
 }

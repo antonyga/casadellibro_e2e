@@ -27,7 +27,7 @@
     <a href="tests.html" class="nav-item">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
       <span>Test Suites</span>
-      <span class="nav-badge">2</span>
+      <span class="nav-badge" id="navFailedBadge" style="display:none"></span>
     </a>
     <span class="nav-section-label">Tools</span>
     <a href="codegen.html" class="nav-item">
@@ -73,9 +73,8 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Run All
       </button>
-      <button class="icon-btn" title="Notifications">
-        <div class="notif-dot"></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <button class="icon-btn" title="Refresh dashboard" onclick="loadDashboard()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       </button>
     </div>
   </header>
@@ -87,11 +86,8 @@
       <div class="stat-card">
         <div class="stat-info">
           <span class="stat-label">Total Tests</span>
-          <span class="stat-value">12</span>
-          <span class="stat-delta neutral">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            No change
-          </span>
+          <span class="stat-value" id="statTotal">—</span>
+          <span class="stat-delta neutral" id="statTotalDelta">Loading…</span>
         </div>
         <div class="stat-icon indigo">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/></svg>
@@ -100,11 +96,8 @@
       <div class="stat-card">
         <div class="stat-info">
           <span class="stat-label">Passed</span>
-          <span class="stat-value" style="color:var(--success)">9</span>
-          <span class="stat-delta up">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-            +2 from last run
-          </span>
+          <span class="stat-value" style="color:var(--success)" id="statPassed">—</span>
+          <span class="stat-delta neutral" id="statPassedDelta">Loading…</span>
         </div>
         <div class="stat-icon green">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -113,11 +106,8 @@
       <div class="stat-card">
         <div class="stat-info">
           <span class="stat-label">Failed</span>
-          <span class="stat-value" style="color:var(--error)">2</span>
-          <span class="stat-delta down">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            Same as before
-          </span>
+          <span class="stat-value" style="color:var(--error)" id="statFailed">—</span>
+          <span class="stat-delta neutral" id="statFailedDelta">Loading…</span>
         </div>
         <div class="stat-icon red">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -125,15 +115,12 @@
       </div>
       <div class="stat-card">
         <div class="stat-info">
-          <span class="stat-label">Flaky Tests</span>
-          <span class="stat-value" style="color:var(--warning)">1</span>
-          <span class="stat-delta neutral">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            Needs attention
-          </span>
+          <span class="stat-label">Total Runs</span>
+          <span class="stat-value" id="statRuns">—</span>
+          <span class="stat-delta neutral" id="statRunsDelta">Loading…</span>
         </div>
         <div class="stat-icon yellow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         </div>
       </div>
     </div>
@@ -143,8 +130,8 @@
       <!-- Donut Chart -->
       <div class="card">
         <div class="card-title">
-          Test Results
-          <span class="card-title-action" onclick="refreshChart()">Refresh ↻</span>
+          Latest Run Results
+          <span class="card-title-action" onclick="loadDashboard()" style="cursor:pointer">Refresh ↻</span>
         </div>
         <div class="chart-container">
           <canvas id="resultsChart"></canvas>
@@ -152,70 +139,28 @@
         <div class="chart-legend">
           <div class="legend-item">
             <div class="legend-dot-label"><div class="legend-dot" style="background:var(--success)"></div><span>Passed</span></div>
-            <span><span class="legend-value">9</span><span class="legend-pct">75%</span></span>
+            <span><span class="legend-value" id="legendPassedVal">—</span><span class="legend-pct" id="legendPassedPct"></span></span>
           </div>
           <div class="legend-item">
             <div class="legend-dot-label"><div class="legend-dot" style="background:var(--error)"></div><span>Failed</span></div>
-            <span><span class="legend-value">2</span><span class="legend-pct">17%</span></span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot-label"><div class="legend-dot" style="background:var(--warning)"></div><span>Flaky</span></div>
-            <span><span class="legend-value">1</span><span class="legend-pct">8%</span></span>
+            <span><span class="legend-value" id="legendFailedVal">—</span><span class="legend-pct" id="legendFailedPct"></span></span>
           </div>
         </div>
       </div>
 
-      <!-- Flakiness Widget -->
+      <!-- Pass Rate / Flakiness Widget -->
       <div class="card">
         <div class="card-title">
-          Flakiness Detection
-          <a href="tests.html" class="card-title-action">View all →</a>
+          Pass Rate by Test
+          <a href="tests.html" class="card-title-action">Run tests →</a>
         </div>
-        <div class="flakiness-item">
-          <div class="flakiness-name">
-            <div class="test-name">Login with valid credentials</div>
-            <div class="suite-name">login.spec.ts</div>
-          </div>
-          <div class="flakiness-bar-wrap">
-            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:72%;background:var(--warning)"></div></div>
-          </div>
-          <span class="flakiness-pct" style="color:var(--warning)">72%</span>
+        <div id="flakinessContainer">
+          <div style="color:var(--text-secondary);font-size:0.82rem;padding:12px 0">Loading…</div>
         </div>
-        <div class="flakiness-item">
-          <div class="flakiness-name">
-            <div class="test-name">Search by book title</div>
-            <div class="suite-name">search.spec.ts</div>
-          </div>
-          <div class="flakiness-bar-wrap">
-            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:95%;background:var(--success)"></div></div>
-          </div>
-          <span class="flakiness-pct" style="color:var(--success)">95%</span>
-        </div>
-        <div class="flakiness-item">
-          <div class="flakiness-name">
-            <div class="test-name">Invalid credentials error</div>
-            <div class="suite-name">login.spec.ts</div>
-          </div>
-          <div class="flakiness-bar-wrap">
-            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:100%;background:var(--success)"></div></div>
-          </div>
-          <span class="flakiness-pct" style="color:var(--success)">100%</span>
-        </div>
-        <div class="flakiness-item">
-          <div class="flakiness-name">
-            <div class="test-name">Homepage cookie banner</div>
-            <div class="suite-name">search.spec.ts</div>
-          </div>
-          <div class="flakiness-bar-wrap">
-            <div class="flakiness-bar"><div class="flakiness-bar-fill" style="width:88%;background:var(--success)"></div></div>
-          </div>
-          <span class="flakiness-pct" style="color:var(--success)">88%</span>
-        </div>
-
         <div class="divider"></div>
         <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--text-secondary)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Flakiness = pass rate over last 20 runs
+          Pass rate across all recorded runs
         </div>
       </div>
     </div>
@@ -224,7 +169,7 @@
     <div class="card">
       <div class="card-title">
         Recent Runs
-        <a href="tests.html" class="card-title-action">View all →</a>
+        <a href="tests.html" class="card-title-action">Run tests →</a>
       </div>
       <div class="table-wrapper">
         <table>
@@ -239,62 +184,8 @@
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td class="td-label">Search by book title</td>
-              <td class="td-secondary">search.spec.ts</td>
-              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
-              <td class="td-secondary">Chrome + Firefox</td>
-              <td class="td-mono">5.6s</td>
-              <td class="td-secondary">Today, 14:32</td>
-              <td>
-                <button class="btn btn-ghost btn-sm" onclick="viewDetails('search')">Details</button>
-              </td>
-            </tr>
-            <tr>
-              <td class="td-label">Invalid credentials error</td>
-              <td class="td-secondary">login.spec.ts</td>
-              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
-              <td class="td-secondary">Chrome + Firefox</td>
-              <td class="td-mono">9.3s</td>
-              <td class="td-secondary">Today, 14:32</td>
-              <td>
-                <button class="btn btn-ghost btn-sm" onclick="viewDetails('login-invalid')">Details</button>
-              </td>
-            </tr>
-            <tr>
-              <td class="td-label">Login with valid credentials</td>
-              <td class="td-secondary">login.spec.ts</td>
-              <td><span class="badge badge-passed"><span class="badge-dot"></span>Passed</span></td>
-              <td class="td-secondary">Chrome + Firefox</td>
-              <td class="td-mono">13.9s</td>
-              <td class="td-secondary">Today, 14:32</td>
-              <td>
-                <button class="btn btn-ghost btn-sm" onclick="viewDetails('login-valid')">Details</button>
-              </td>
-            </tr>
-            <tr>
-              <td class="td-label">Add book to cart</td>
-              <td class="td-secondary">cart.spec.ts</td>
-              <td><span class="badge badge-failed"><span class="badge-dot"></span>Failed</span></td>
-              <td class="td-secondary">Chrome</td>
-              <td class="td-mono">8.1s</td>
-              <td class="td-secondary">Today, 13:15</td>
-              <td>
-                <button class="btn btn-danger btn-sm" onclick="openFailureModal()">Inspect</button>
-              </td>
-            </tr>
-            <tr>
-              <td class="td-label">Checkout flow</td>
-              <td class="td-secondary">checkout.spec.ts</td>
-              <td><span class="badge badge-running"><span class="badge-dot"></span>Running</span></td>
-              <td class="td-secondary">Firefox</td>
-              <td class="td-mono">—</td>
-              <td class="td-secondary">Today, 14:35</td>
-              <td>
-                <button class="btn btn-ghost btn-sm">Stop</button>
-              </td>
-            </tr>
+          <tbody id="recentRunsBody">
+            <tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:24px">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -303,131 +194,284 @@
   </main>
 </div>
 
-<!-- ── Failure Modal ────────────────────────────────────── -->
-<div class="modal-overlay" id="failureModal">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <h3>
-        <span class="badge badge-failed" style="margin-right:8px"><span class="badge-dot"></span>Failed</span>
-        Add book to cart — cart.spec.ts
-      </h3>
-      <button class="modal-close" onclick="closeModal('failureModal')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="ai-summary">
-        <div class="ai-summary-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.88 5.76a1 1 0 00.95.69H21l-4.94 3.6a1 1 0 00-.36 1.12L17.58 20 12 16.24 6.42 20l1.88-5.83a1 1 0 00-.36-1.12L3 9.45h6.17a1 1 0 00.95-.69L12 3z"/></svg>
-        </div>
-        <div class="ai-summary-text">
-          <span class="ai-summary-label">✦ AI Error Summary</span>
-          The "Add to Cart" button was not clickable because the cookie consent banner appeared on top of it, blocking pointer events. The test tried to click the button but a floating overlay intercepted the action. <strong>Suggested fix:</strong> ensure <code>acceptCookies()</code> is called before interacting with product pages.
-        </div>
-      </div>
-      <div class="error-screenshot" style="background:#f1f5f9;height:180px;display:flex;align-items:center;justify-content:center;border-radius:8px;margin-bottom:16px;">
-        <div style="text-align:center;color:var(--text-secondary)">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;opacity:0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <p style="font-size:0.8rem">Failure screenshot captured</p>
-          <p style="font-size:0.72rem;margin-top:4px">test-failed-1.png</p>
-        </div>
-      </div>
-      <div class="trace-row mb-4">
-        <div class="trace-pill">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          View Trace Recording
-        </div>
-        <div class="trace-pill">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2H3v16h5l3 3 3-3h7V2z"/></svg>
-          Download Trace (.zip)
-        </div>
-        <div class="trace-pill">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Full Stack Trace
-        </div>
-      </div>
-      <div style="background:var(--bg-app);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'SF Mono','Fira Code',monospace;font-size:0.75rem;color:var(--error);line-height:1.8;">
-        TimeoutError: locator.click: Timeout 15000ms exceeded<br>
-        &nbsp;&nbsp;at CartPage.addToCart (pages/cart-page.ts:24)<br>
-        &nbsp;&nbsp;at tests/cart.spec.ts:18<br>
-        <span style="color:var(--text-secondary)">Expected: element to be visible and clickable<br>
-        Received: element intercepted by overlay (.cabecera)</span>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('failureModal')">Close</button>
-      <button class="btn btn-primary" onclick="reRecord()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
-        Re-record this Step
-      </button>
-    </div>
-  </div>
-</div>
-
 <script>
-// ── Chart ──────────────────────────────────────────────────
-const ctx = document.getElementById('resultsChart').getContext('2d');
-new Chart(ctx, {
-  type: 'doughnut',
-  data: {
-    labels: ['Passed', 'Failed', 'Flaky'],
-    datasets: [{
-      data: [9, 2, 1],
-      backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
-      borderWidth: 0,
-      spacing: 3,
-      borderRadius: 4,
-    }]
-  },
-  options: {
-    cutout: '70%',
-    plugins: { legend: { display: false }, tooltip: {
-      callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tests` }
-    }},
-    animation: { animateRotate: true, duration: 900, easing: 'easeOutQuart' }
+// ── Data loading ────────────────────────────────────────────
+let resultsChart = null;
+
+async function loadDashboard() {
+  let reports = [], tests = [];
+  try {
+    [reports, tests] = await Promise.all([
+      fetch('/api/reports').then(r => r.json()),
+      fetch('/api/tests').then(r => r.json()),
+    ]);
+  } catch {
+    showServerError();
+    return;
   }
-});
 
-function refreshChart() {
-  const btn = document.querySelector('.card-title-action');
-  btn.textContent = 'Refreshing…';
-  setTimeout(() => btn.textContent = 'Refresh ↻', 1200);
+  const latest = reports[0] || null;
+  const prev   = reports[1] || null;
+
+  // ── Counts from latest run ──────────────────────────────
+  const latestPassed = latest ? latest.results.filter(r => r.passed).length : 0;
+  const latestFailed = latest ? latest.results.filter(r => !r.passed).length : 0;
+  const prevPassed   = prev   ? prev.results.filter(r => r.passed).length   : null;
+  const prevFailed   = prev   ? prev.results.filter(r => !r.passed).length  : null;
+
+  // ── Per-test pass rate across all runs ──────────────────
+  const testMap = {};
+  tests.forEach(t => {
+    testMap[t.id] = { label: t.label, specFile: t.specFile, runs: 0, passed: 0 };
+  });
+  reports.forEach(report => {
+    (report.results || []).forEach(r => {
+      if (testMap[r.id]) {
+        testMap[r.id].runs++;
+        if (r.passed) testMap[r.id].passed++;
+      }
+    });
+  });
+
+  // ── Stat cards ──────────────────────────────────────────
+  setText('statTotal',  tests.length);
+  setText('statPassed', latest ? latestPassed : '—');
+  setText('statFailed', latest ? latestFailed : '—');
+  setText('statRuns',   reports.length);
+
+  setDelta('statTotalDelta',  null, reports.length === 0 ? 'No runs yet' : `${tests.length} spec${tests.length !== 1 ? 's' : ''} defined`);
+  setDelta('statPassedDelta', prevPassed !== null ? latestPassed - prevPassed : null,
+    latest ? null : 'No runs yet', true);
+  setDelta('statFailedDelta', prevFailed !== null ? latestFailed - prevFailed : null,
+    latest ? null : 'No runs yet', false);
+  setDelta('statRunsDelta',   null,
+    reports.length === 0 ? 'No runs yet' : `Last: ${fmtTime(latest.timestamp)}`);
+
+  // Update sidebar failed badge
+  const badge = document.getElementById('navFailedBadge');
+  if (latest && latestFailed > 0) {
+    badge.textContent = latestFailed + ' failed';
+    badge.style.display = '';
+    badge.style.background = 'var(--error)';
+    badge.style.color = '#fff';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  // ── Donut chart ─────────────────────────────────────────
+  renderChart(latestPassed, latestFailed);
+
+  const total = (latestPassed + latestFailed) || 1;
+  setText('legendPassedVal', latest ? latestPassed : '—');
+  setText('legendFailedVal', latest ? latestFailed : '—');
+  document.getElementById('legendPassedPct').textContent = latest ? Math.round(latestPassed / total * 100) + '%' : '';
+  document.getElementById('legendFailedPct').textContent = latest ? Math.round(latestFailed / total * 100) + '%' : '';
+
+  // ── Pass rate / flakiness widget ────────────────────────
+  renderFlakiness(testMap, reports.length);
+
+  // ── Recent runs table ───────────────────────────────────
+  renderRecentRuns(reports);
 }
 
-// ── Modal ──────────────────────────────────────────────────
-function openFailureModal() { document.getElementById('failureModal').classList.add('open'); }
-function closeModal(id)      { document.getElementById(id).classList.remove('open'); }
+// ── Chart ───────────────────────────────────────────────────
+function renderChart(passed, failed) {
+  const ctx  = document.getElementById('resultsChart').getContext('2d');
+  const data = (passed + failed) > 0
+    ? [passed, failed]
+    : [1];  // placeholder slice when no data
+  const colors = (passed + failed) > 0
+    ? ['#10B981', '#EF4444']
+    : ['#e2e8f0'];
 
-document.getElementById('failureModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal('failureModal');
-});
+  if (resultsChart) {
+    resultsChart.data.datasets[0].data           = data;
+    resultsChart.data.datasets[0].backgroundColor = colors;
+    resultsChart.update();
+    return;
+  }
 
-function reRecord() {
-  closeModal('failureModal');
-  window.location.href = 'codegen.html';
+  resultsChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Passed', 'Failed'],
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth:  0,
+        spacing:      3,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed} tests` } }
+      },
+      animation: { animateRotate: true, duration: 900, easing: 'easeOutQuart' }
+    }
+  });
 }
 
-function viewDetails(id) {
+// ── Pass rate bars ──────────────────────────────────────────
+function renderFlakiness(testMap, totalReports) {
+  const container = document.getElementById('flakinessContainer');
+  const items     = Object.values(testMap).sort((a, b) => {
+    const rA = a.runs ? a.passed / a.runs : 1;
+    const rB = b.runs ? b.passed / b.runs : 1;
+    return rA - rB;   // worst first
+  });
+
+  if (totalReports === 0) {
+    container.innerHTML = '<div style="color:var(--text-secondary);font-size:0.82rem;padding:12px 0">No runs yet — go to <a href="tests.html" style="color:var(--accent)">Test Suites</a> to run your first test.</div>';
+    return;
+  }
+
+  container.innerHTML = items.map(t => {
+    const pct    = t.runs ? Math.round(t.passed / t.runs * 100) : 0;
+    const color  = pct === 100 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--error)';
+    const runsLbl = t.runs ? `${t.passed}/${t.runs} runs` : 'not run yet';
+    return `
+      <div class="flakiness-item">
+        <div class="flakiness-name">
+          <div class="test-name">${esc(t.label)}</div>
+          <div class="suite-name">${esc(t.specFile || '')} · ${runsLbl}</div>
+        </div>
+        <div class="flakiness-bar-wrap">
+          <div class="flakiness-bar">
+            <div class="flakiness-bar-fill" style="width:${t.runs ? pct : 0}%;background:${color}"></div>
+          </div>
+        </div>
+        <span class="flakiness-pct" style="color:${color}">${t.runs ? pct + '%' : '—'}</span>
+      </div>`;
+  }).join('');
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    container.querySelectorAll('.flakiness-bar-fill').forEach(el => {
+      const w = el.style.width;
+      el.style.width = '0';
+      setTimeout(() => el.style.width = w, 80);
+    });
+  });
+}
+
+// ── Recent runs table ───────────────────────────────────────
+function renderRecentRuns(reports) {
+  const tbody = document.getElementById('recentRunsBody');
+
+  if (reports.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:32px">
+      No runs recorded yet. <a href="tests.html" style="color:var(--accent)">Run your first test →</a>
+    </td></tr>`;
+    return;
+  }
+
+  // Expand each report into individual test rows (newest first, max 20 rows)
+  const rows = [];
+  for (const report of reports) {
+    for (const r of (report.results || [])) {
+      rows.push({ report, result: r });
+      if (rows.length >= 20) break;
+    }
+    if (rows.length >= 20) break;
+  }
+
+  tbody.innerHTML = rows.map(({ report, result }) => {
+    const badge  = result.passed
+      ? `<span class="badge badge-passed"><span class="badge-dot"></span>Passed</span>`
+      : `<span class="badge badge-failed"><span class="badge-dot"></span>Failed</span>`;
+    const label    = esc(result.label ?? `Test #${result.id}`);
+    const specFile = esc(specFileFor(result.id));
+    const dur      = esc(result.duration ?? '—');
+    const runAt    = fmtTime(report.timestamp);
+    const reportUrl = report.hasHtml
+      ? `/reports/${report.id}/html/index.html`
+      : '#';
+    const actionBtn = report.hasHtml
+      ? `<a href="${reportUrl}" target="_blank" class="btn btn-ghost btn-sm">Report</a>`
+      : `<span style="color:var(--text-secondary);font-size:0.78rem">No report</span>`;
+
+    return `<tr>
+      <td class="td-label">${label}</td>
+      <td class="td-secondary">${specFile}</td>
+      <td>${badge}</td>
+      <td class="td-secondary">Chromium</td>
+      <td class="td-mono">${dur}</td>
+      <td class="td-secondary">${runAt}</td>
+      <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Helpers ─────────────────────────────────────────────────
+const SPEC_MAP = {};  // filled after /api/tests loads
+function specFileFor(id) {
+  return SPEC_MAP[id] || '';
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setDelta(id, delta, fallback, higherIsBetter = true) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (delta === null || delta === undefined) {
+    el.textContent = fallback ?? '';
+    el.className   = 'stat-delta neutral';
+    return;
+  }
+  const sign = delta > 0 ? '+' : '';
+  el.textContent = delta === 0 ? 'Same as last run' : `${sign}${delta} from last run`;
+  const up = delta > 0 ? higherIsBetter : !higherIsBetter;
+  el.className = `stat-delta ${delta === 0 ? 'neutral' : up ? 'up' : 'down'}`;
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function showServerError() {
+  ['statTotal','statPassed','statFailed','statRuns'].forEach(id => setText(id, '—'));
+  ['statTotalDelta','statPassedDelta','statFailedDelta','statRunsDelta'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = 'Server offline'; el.className = 'stat-delta down'; }
+  });
+  document.getElementById('recentRunsBody').innerHTML =
+    `<tr><td colspan="7" style="text-align:center;color:var(--error);padding:32px">
+      Could not reach the TestPilot server. Make sure it is running: <code>npm run ui</code>
+    </td></tr>`;
+  document.getElementById('flakinessContainer').innerHTML =
+    `<div style="color:var(--error);font-size:0.82rem;padding:12px 0">Server offline</div>`;
+}
+
+// ── Run All → navigate to Test Suites ───────────────────────
+function runAll() {
   window.location.href = 'tests.html';
 }
 
-function runAll() {
-  const btn = document.querySelector('.btn-primary');
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Running…';
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run All';
-    btn.disabled = false;
-  }, 2500);
-}
+// ── Boot ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  // Pre-load spec file names so renderRecentRuns can use them
+  try {
+    const tests = await fetch('/api/tests').then(r => r.json());
+    tests.forEach(t => { SPEC_MAP[t.id] = t.specFile?.split('/').pop() ?? ''; });
+  } catch { /* ignore, SPEC_MAP stays empty */ }
 
-// Animate flakiness bars on load
-window.addEventListener('load', () => {
-  document.querySelectorAll('.flakiness-bar-fill').forEach(el => {
-    const w = el.style.width;
-    el.style.width = '0';
-    setTimeout(() => el.style.width = w, 200);
-  });
+  loadDashboard();
 });
 </script>
 </body>

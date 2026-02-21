@@ -1,0 +1,15 @@
+{
+  "id": "2026-02-19_21-48-56",
+  "timestamp": "2026-02-19T21:48:56.295Z",
+  "allPassed": false,
+  "totalMs": 9244,
+  "hasHtml": true,
+  "results": [
+    {
+      "id": 2,
+      "label": "Invalid credentials error",
+      "passed": false,
+      "duration": "—"
+    }
+  ]
+}

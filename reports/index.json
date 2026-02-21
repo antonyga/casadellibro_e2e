@@ -1,0 +1,158 @@
+[
+  {
+    "id": "2026-02-21_22-02-20",
+    "timestamp": "2026-02-21T22:02:20.412Z",
+    "allPassed": true,
+    "totalMs": 8406,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": true,
+        "duration": "4.2s"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-21_22-01-52",
+    "timestamp": "2026-02-21T22:01:52.285Z",
+    "allPassed": false,
+    "totalMs": 11397,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-21_21-54-06",
+    "timestamp": "2026-02-21T21:54:06.838Z",
+    "allPassed": false,
+    "totalMs": 10621,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-21_21-47-42",
+    "timestamp": "2026-02-21T21:47:42.759Z",
+    "allPassed": false,
+    "totalMs": 9762,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-21_21-44-29",
+    "timestamp": "2026-02-21T21:44:29.551Z",
+    "allPassed": false,
+    "totalMs": 11116,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-19_21-50-17",
+    "timestamp": "2026-02-19T21:50:17.220Z",
+    "allPassed": false,
+    "totalMs": 9724,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 2,
+        "label": "Invalid credentials error",
+        "passed": false,
+        "duration": "—"
+      },
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-19_21-48-56",
+    "timestamp": "2026-02-19T21:48:56.295Z",
+    "allPassed": false,
+    "totalMs": 9244,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 2,
+        "label": "Invalid credentials error",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-19_21-48-19",
+    "timestamp": "2026-02-19T21:48:19.468Z",
+    "allPassed": false,
+    "totalMs": 2769,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 2,
+        "label": "Invalid credentials error",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-19_21-38-41",
+    "timestamp": "2026-02-19T21:38:41.628Z",
+    "allPassed": false,
+    "totalMs": 2695,
+    "hasHtml": true,
+    "results": [
+      {
+        "id": 2,
+        "label": "Invalid credentials error",
+        "passed": false,
+        "duration": "—"
+      }
+    ]
+  },
+  {
+    "id": "2026-02-19_21-37-48",
+    "timestamp": "2026-02-19T21:37:48.187Z",
+    "allPassed": true,
+    "totalMs": 1234,
+    "hasHtml": false,
+    "results": [
+      {
+        "id": 3,
+        "label": "Login with valid credentials",
+        "passed": true,
+        "duration": "13.9s"
+      }
+    ]
+  }
+]
