@@ -438,7 +438,7 @@ function actionsMenu(t) {
     </div>`;
   }
   if (t.status === 'running') {
-    return `<button class="btn btn-secondary btn-sm">Stop</button>`;
+    return `<button class="btn btn-secondary btn-sm" onclick="stopRun()">Stop</button>`;
   }
   return `<div style="display:flex;gap:6px">
     ${t.real
@@ -665,6 +665,27 @@ function finishRun(results, hadError) {
 function cancelRun() {
   if (activeSource) { activeSource.close(); activeSource = null; }
   closeTerminal();
+}
+
+/* ── Stop an in-progress run ──────────────────────────────── */
+function stopRun() {
+  if (!activeSource) {
+    showToast('No active run to stop.', 'warn');
+    return;
+  }
+  activeSource.close();
+  activeSource = null;
+
+  appendLine('\n⏹  Run stopped by user.\n', 'warn');
+  document.getElementById('terminalSpinner').style.display = 'none';
+  const badge    = document.getElementById('terminalResultBadge');
+  const badgeTxt = document.getElementById('terminalResultText');
+  badge.className      = 'terminal-result-badge failed';
+  badgeTxt.textContent = 'Stopped';
+
+  // Reset any tests still marked as "running" back to failed
+  TESTS.forEach(t => { if (t.status === 'running') t.status = 'failed'; });
+  render();
 }
 function closeTerminal() {
   document.getElementById('terminalModal').classList.remove('open');

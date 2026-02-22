@@ -1,0 +1,15 @@
+{
+  "id": "2026-02-22_15-12-20",
+  "timestamp": "2026-02-22T15:12:20.076Z",
+  "allPassed": true,
+  "totalMs": 13554,
+  "hasHtml": true,
+  "results": [
+    {
+      "id": 3,
+      "label": "Login with valid credentials",
+      "passed": true,
+      "duration": "8.9s"
+    }
+  ]
+}
