@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <title>TestPilot — Test Suites</title>
   <link rel="stylesheet" href="css/styles.css" />
   <style>
@@ -146,6 +147,48 @@
       color: var(--text-secondary);
     }
     .history-empty svg { width: 36px; height: 36px; opacity: 0.25; margin: 0 auto 10px; display: block; }
+
+    /* ── Export dropdown ────────────────────────────────────── */
+    .export-wrap { position: relative; display: inline-block; }
+    .export-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 190px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      z-index: 300;
+      overflow: hidden;
+    }
+    .export-menu.open { display: block; }
+    .export-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: background 0.12s;
+    }
+    .export-menu-item:hover { background: var(--bg-app); }
+    .export-menu-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      padding: 8px 14px 4px;
+    }
+    .export-menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
   </style>
 </head>
 <body>
@@ -206,6 +249,24 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         History
       </button>
+      <div class="export-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="toggleExportMenu(event,'exportMenuAll')" title="Export tests">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:1px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="export-menu" id="exportMenuAll">
+          <div class="export-menu-label">Export all tests</div>
+          <button class="export-menu-item" onclick="exportTests(null,'json');closeAllExportMenus()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            JSON
+          </button>
+          <button class="export-menu-item" onclick="exportTests(null,'csv');closeAllExportMenus()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            CSV
+          </button>
+        </div>
+      </div>
       <button class="btn btn-primary btn-sm" onclick="window.location.href='codegen.html'">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Test
@@ -240,8 +301,26 @@
     <!-- Bulk Actions bar -->
     <div id="bulkBar" style="display:none;align-items:center;gap:10px;background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:10px 16px;margin-bottom:16px;">
       <span style="font-size:0.82rem;font-weight:600;color:var(--accent)" id="bulkCount">0 selected</span>
-      <div style="margin-left:auto;display:flex;gap:8px">
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
         <button class="btn btn-secondary btn-sm" onclick="bulkRun()">Run Selected</button>
+        <div class="export-wrap">
+          <button class="btn btn-secondary btn-sm" onclick="toggleExportMenu(event,'exportMenuSelected')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:1px"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="export-menu" id="exportMenuSelected" style="right:0;left:auto;">
+            <div class="export-menu-label">Export selected</div>
+            <button class="export-menu-item" onclick="bulkExport('json')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              JSON
+            </button>
+            <button class="export-menu-item" onclick="bulkExport('csv')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+              CSV
+            </button>
+          </div>
+        </div>
         <button class="btn btn-danger btn-sm" onclick="bulkDelete()">Delete</button>
         <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Cancel</button>
       </div>
@@ -961,6 +1040,56 @@ async function deleteReport(id) {
     showToast('Could not delete report.', 'error');
   }
 }
+
+/* ── Export ──────────────────────────────────────────────── */
+function exportTests(ids, format) {
+  const rows = ids ? TESTS.filter(t => ids.includes(t.id)) : TESTS;
+  const count = rows.length;
+  const label = ids ? `selected-${count}` : 'all';
+  const date  = new Date().toISOString().slice(0, 10);
+
+  if (format === 'csv') {
+    const cols = ['id', 'name', 'suite', 'status', 'browser', 'duration', 'lastRun'];
+    const csv  = [
+      cols.join(','),
+      ...rows.map(t => cols.map(c => `"${String(t[c] ?? '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    downloadFile(csv, `tests-${label}-${date}.csv`, 'text/csv');
+  } else {
+    const data = rows.map(({ id, name, suite, status, browser, duration, lastRun }) =>
+      ({ id, name, suite, status, browser, duration, lastRun }));
+    downloadFile(JSON.stringify(data, null, 2), `tests-${label}-${date}.json`, 'application/json');
+  }
+
+  showToast(`Exported ${count} test${count !== 1 ? 's' : ''} as ${format.toUpperCase()}.`, 'success');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function bulkExport(format) {
+  exportTests([...selectedIds], format);
+  closeAllExportMenus();
+}
+
+function toggleExportMenu(e, menuId) {
+  e.stopPropagation();
+  const menu   = document.getElementById(menuId);
+  const isOpen = menu.classList.contains('open');
+  closeAllExportMenus();
+  if (!isOpen) menu.classList.add('open');
+}
+
+function closeAllExportMenus() {
+  document.querySelectorAll('.export-menu').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', closeAllExportMenus);
 
 /* ── Initial render (fetch variable defs from server first) ── */
 async function init() {
