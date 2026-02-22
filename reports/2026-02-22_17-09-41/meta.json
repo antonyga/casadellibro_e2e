@@ -1,0 +1,15 @@
+{
+  "id": "2026-02-22_17-09-41",
+  "timestamp": "2026-02-22T17:09:41.281Z",
+  "allPassed": true,
+  "totalMs": 12189,
+  "hasHtml": true,
+  "results": [
+    {
+      "id": 1,
+      "label": "Search by book title",
+      "passed": true,
+      "duration": "7.4s"
+    }
+  ]
+}

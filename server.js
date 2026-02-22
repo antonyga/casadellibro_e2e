@@ -16,11 +16,13 @@ const express    = require('express');
 const { spawn }  = require('child_process');
 const path       = require('path');
 const fs         = require('fs');
+const cron       = require('node-cron');
 
-const app         = express();
-const PORT        = 3001;
-const REPORTS_DIR = path.join(__dirname, 'reports');
-const ENVS_FILE   = path.join(__dirname, 'environments.json');
+const app            = express();
+const PORT           = 3001;
+const REPORTS_DIR    = path.join(__dirname, 'reports');
+const ENVS_FILE      = path.join(__dirname, 'environments.json');
+const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
 
 // Ensure the reports directory always exists before we do anything else
 fs.mkdirSync(REPORTS_DIR, { recursive: true });
@@ -366,6 +368,225 @@ app.get('/api/run', (req, res) => {
   req.on('close', () => proc.kill());
 });
 
+// ── Schedule helpers ───────────────────────────────────────────────────────
+const activeCronJobs    = new Map(); // scheduleId → node-cron task
+const activeOneTimeJobs = new Map(); // scheduleId → setTimeout handle
+
+function loadSchedules() {
+  if (!fs.existsSync(SCHEDULES_FILE)) return [];
+  try { return JSON.parse(fs.readFileSync(SCHEDULES_FILE, 'utf8')); } catch { return []; }
+}
+
+function saveSchedules(schedules) {
+  fs.writeFileSync(SCHEDULES_FILE, JSON.stringify(schedules, null, 2));
+}
+
+function runScheduledTests(schedule) {
+  const realIds = (schedule.testIds || []).filter(id => TEST_SPECS[id]);
+  if (!realIds.length) {
+    console.warn(`  ⚠ Schedule "${schedule.name}": no valid test IDs — skipping`);
+    return;
+  }
+
+  const combinedGrep = realIds.length === 1
+    ? TEST_SPECS[realIds[0]].grep
+    : `(${realIds.map(id => TEST_SPECS[id].grep).join('|')})`;
+
+  const startedAt = Date.now();
+  let fullOutput = '';
+
+  const proc = spawn('npx', [
+    'playwright', 'test',
+    `--grep="${combinedGrep}"`,
+    '--project=chromium',
+    '--reporter=list,html',
+  ], { cwd: __dirname, env: { ...process.env, FORCE_COLOR: '0' }, shell: true });
+
+  const onData = chunk => { fullOutput += stripAnsi(chunk.toString()); };
+  proc.stdout.on('data', onData);
+  proc.stderr.on('data', onData);
+
+  proc.on('error', err => {
+    console.error(`  ✗ Schedule "${schedule.name}" process error: ${err.message}`);
+  });
+
+  proc.on('close', code => {
+    const lines   = fullOutput.split('\n');
+    const results = realIds.map(id => {
+      const grepRegex = new RegExp(TEST_SPECS[id].grep);
+      let passed = false, duration = '—';
+      for (const line of lines) {
+        if (!grepRegex.test(line)) continue;
+        const isPassed = /[\u2713\u2714]/.test(line);
+        const isFailed = /[\u2718\xd7]/.test(line);
+        if (isPassed || isFailed) {
+          passed = isPassed;
+          const m = line.match(/\(([^)]+)\)\s*$/);
+          if (m) duration = m[1];
+          break;
+        }
+      }
+      if (!passed && code === 0) passed = true;
+      return { id, passed, duration };
+    });
+
+    saveReport(results, Date.now() - startedAt);
+
+    // Update lastRun timestamp in persistent storage
+    const schedules = loadSchedules();
+    const s = schedules.find(sc => sc.id === schedule.id);
+    if (s) { s.lastRun = new Date().toISOString(); saveSchedules(schedules); }
+
+    const passCount = results.filter(r => r.passed).length;
+    console.log(`  ✓ Schedule "${schedule.name}" finished — ${passCount}/${results.length} passed`);
+  });
+}
+
+function registerSchedule(schedule) {
+  // Cancel any existing job for this ID
+  if (activeCronJobs.has(schedule.id)) {
+    activeCronJobs.get(schedule.id).stop();
+    activeCronJobs.delete(schedule.id);
+  }
+  if (activeOneTimeJobs.has(schedule.id)) {
+    clearTimeout(activeOneTimeJobs.get(schedule.id));
+    activeOneTimeJobs.delete(schedule.id);
+  }
+
+  if (!schedule.enabled) return;
+
+  if (schedule.type === 'once') {
+    const runAt = new Date(schedule.runAt).getTime();
+    const delay = runAt - Date.now();
+
+    if (delay <= 0) {
+      // Time already passed — mark as missed if still pending
+      const schedules = loadSchedules();
+      const s = schedules.find(sc => sc.id === schedule.id);
+      if (s && s.status === 'pending') {
+        s.status = 'missed';
+        saveSchedules(schedules);
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      console.log(`\n  ⏰ One-time scheduled run: "${schedule.name}"`);
+      runScheduledTests(schedule);
+      // Mark as completed after firing
+      const schedules = loadSchedules();
+      const s = schedules.find(sc => sc.id === schedule.id);
+      if (s) { s.status = 'completed'; saveSchedules(schedules); }
+      activeOneTimeJobs.delete(schedule.id);
+    }, delay);
+
+    activeOneTimeJobs.set(schedule.id, timer);
+  } else {
+    if (!cron.validate(schedule.cron)) {
+      console.warn(`  ⚠ Invalid cron expression "${schedule.cron}" for schedule "${schedule.name}"`);
+      return;
+    }
+    const task = cron.schedule(schedule.cron, () => {
+      console.log(`\n  ⏰ Running scheduled tests: "${schedule.name}"`);
+      runScheduledTests(schedule);
+    });
+    activeCronJobs.set(schedule.id, task);
+  }
+}
+
+function initSchedules() {
+  const schedules = loadSchedules();
+  schedules.forEach(registerSchedule);
+  const active = schedules.filter(s => s.enabled).length;
+  if (active) console.log(`  ⏰ ${active} active schedule(s) registered`);
+}
+
+// ── GET /api/schedules ────────────────────────────────────────────────────
+app.get('/api/schedules', (_req, res) => {
+  res.json(loadSchedules());
+});
+
+// ── POST /api/schedules ───────────────────────────────────────────────────
+app.post('/api/schedules', (req, res) => {
+  const { name, testIds, type, cron: cronExpr, runAt, enabled, frequencyLabel } = req.body;
+  if (!name || !testIds?.length) {
+    return res.status(400).json({ error: 'name and testIds are required' });
+  }
+  if (type === 'once') {
+    if (!runAt || isNaN(new Date(runAt).getTime())) {
+      return res.status(400).json({ error: 'A valid runAt datetime is required for one-time schedules' });
+    }
+  } else {
+    if (!cronExpr || !cron.validate(cronExpr)) {
+      return res.status(400).json({ error: 'A valid cron expression is required for recurring schedules' });
+    }
+  }
+  const schedules = loadSchedules();
+  const newSchedule = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name,
+    testIds,
+    type:           type === 'once' ? 'once' : 'recurring',
+    cron:           type === 'once' ? undefined : cronExpr,
+    runAt:          type === 'once' ? runAt : undefined,
+    frequencyLabel: frequencyLabel || (type === 'once' ? runAt : cronExpr),
+    status:         type === 'once' ? 'pending' : undefined,
+    enabled:        enabled !== false,
+    createdAt:      new Date().toISOString(),
+    lastRun:        null,
+  };
+  schedules.push(newSchedule);
+  saveSchedules(schedules);
+  registerSchedule(newSchedule);
+  res.status(201).json(newSchedule);
+});
+
+// ── PUT /api/schedules/:id ────────────────────────────────────────────────
+app.put('/api/schedules/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, testIds, type, cron: cronExpr, runAt, enabled, frequencyLabel } = req.body;
+  if (!name || !testIds?.length) {
+    return res.status(400).json({ error: 'name and testIds are required' });
+  }
+  if (type === 'once') {
+    if (!runAt || isNaN(new Date(runAt).getTime())) {
+      return res.status(400).json({ error: 'A valid runAt datetime is required for one-time schedules' });
+    }
+  } else {
+    if (!cronExpr || !cron.validate(cronExpr)) {
+      return res.status(400).json({ error: 'A valid cron expression is required for recurring schedules' });
+    }
+  }
+  const schedules = loadSchedules();
+  const idx = schedules.findIndex(s => s.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Schedule not found' });
+  schedules[idx] = {
+    ...schedules[idx],
+    name, testIds, enabled,
+    type:           type === 'once' ? 'once' : 'recurring',
+    cron:           type === 'once' ? undefined : cronExpr,
+    runAt:          type === 'once' ? runAt : undefined,
+    frequencyLabel: frequencyLabel || (type === 'once' ? runAt : cronExpr),
+    status:         type === 'once' ? (schedules[idx].status || 'pending') : undefined,
+  };
+  saveSchedules(schedules);
+  registerSchedule(schedules[idx]);
+  res.json(schedules[idx]);
+});
+
+// ── DELETE /api/schedules/:id ─────────────────────────────────────────────
+app.delete('/api/schedules/:id', (req, res) => {
+  const { id } = req.params;
+  const schedules = loadSchedules();
+  const idx = schedules.findIndex(s => s.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Schedule not found' });
+  schedules.splice(idx, 1);
+  saveSchedules(schedules);
+  if (activeCronJobs.has(id)) { activeCronJobs.get(id).stop(); activeCronJobs.delete(id); }
+  if (activeOneTimeJobs.has(id)) { clearTimeout(activeOneTimeJobs.get(id)); activeOneTimeJobs.delete(id); }
+  res.json({ ok: true });
+});
+
 // ── GET /api/tests ─────────────────────────────────────────────────────────
 app.get('/api/tests', (req, res) => {
   res.json(Object.entries(TEST_SPECS).map(([id, spec]) => ({ id: Number(id), ...spec })));
@@ -382,4 +603,5 @@ app.listen(PORT, () => {
   console.log(`  UI       →  http://localhost:${PORT}/tests.html`);
   console.log(`  API run  →  http://localhost:${PORT}/api/run?ids=3`);
   console.log(`  Reports  →  http://localhost:${PORT}/api/reports\n`);
+  initSchedules();
 });

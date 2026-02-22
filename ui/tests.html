@@ -189,6 +189,85 @@
       padding: 8px 14px 4px;
     }
     .export-menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ── Schedule cards ─────────────────────────────────────── */
+    .schedule-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+    .schedule-card:hover { border-color: var(--accent); }
+    .schedule-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .schedule-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+    }
+
+    /* ── Toggle switch ──────────────────────────────────────── */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .toggle-wrap input[type=checkbox] { display: none; }
+    .toggle-track {
+      display: inline-block;
+      width: 34px; height: 18px;
+      background: var(--border);
+      border-radius: 99px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.18s;
+      flex-shrink: 0;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      left: 2px; top: 2px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.18s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-wrap input:checked + .toggle-track { background: var(--accent); }
+    .toggle-wrap input:checked + .toggle-track::after { transform: translateX(16px); }
+
+    /* ── Frequency selector buttons ─────────────────────────── */
+    .freq-btn {
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .freq-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .freq-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Day-of-week buttons ────────────────────────────────── */
+    .day-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .day-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .day-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   </style>
 </head>
 <body>
@@ -248,6 +327,10 @@
       <button class="btn btn-secondary btn-sm" onclick="openHistory()" title="Report History">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         History
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="openSchedules()" title="Scheduled runs">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="2" fill="currentColor" stroke="none"/></svg>
+        Schedules
       </button>
       <div class="export-wrap">
         <button class="btn btn-secondary btn-sm" onclick="toggleExportMenu(event,'exportMenuAll')" title="Export tests">
@@ -460,6 +543,128 @@
       <button class="btn btn-primary" onclick="confirmRunWithVars()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9V3z"/></svg>
         Run Tests
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Schedules List Modal ─────────────────────────────────── -->
+<div class="modal-overlay" id="schedulesModal" onclick="if(event.target===this)closeModal('schedulesModal')">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="2" fill="currentColor" stroke="none"/></svg>
+        Schedules
+      </h3>
+      <button class="modal-close" onclick="closeModal('schedulesModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="schedulesBody" style="padding:16px;max-height:480px;overflow-y:auto;">
+      <div class="schedule-empty">Loading…</div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="btn btn-primary btn-sm" onclick="openScheduleForm(null)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Schedule
+      </button>
+      <button class="btn btn-secondary" onclick="closeModal('schedulesModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Schedule Form Modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="scheduleFormModal" onclick="if(event.target===this)closeModal('scheduleFormModal')">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 id="scheduleFormTitle">New Schedule</h3>
+      <button class="modal-close" onclick="closeModal('scheduleFormModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;max-height:60vh;overflow-y:auto;">
+
+      <!-- Name -->
+      <div class="form-group">
+        <label class="form-label">Schedule name</label>
+        <input class="form-input" id="sfName" type="text" placeholder="e.g. Nightly regression" />
+      </div>
+
+      <!-- Tests to run -->
+      <div class="form-group">
+        <label class="form-label">Tests to run</label>
+        <div id="sfTestList" style="display:flex;flex-direction:column;gap:8px;margin-top:6px;"></div>
+      </div>
+
+      <!-- Frequency presets -->
+      <div class="form-group">
+        <label class="form-label">Frequency</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          <button class="freq-btn active" data-freq="hourly"  onclick="setSchedFreq('hourly',this)">Hourly</button>
+          <button class="freq-btn"        data-freq="daily"   onclick="setSchedFreq('daily',this)">Daily</button>
+          <button class="freq-btn"        data-freq="weekly"  onclick="setSchedFreq('weekly',this)">Weekly</button>
+          <button class="freq-btn"        data-freq="custom"  onclick="setSchedFreq('custom',this)">Custom</button>
+          <button class="freq-btn"        data-freq="once"    onclick="setSchedFreq('once',this)">Once</button>
+        </div>
+      </div>
+
+      <!-- Time picker (daily + weekly) -->
+      <div id="sfTimePicker" style="display:none;" class="form-group">
+        <label class="form-label">Time</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+          <select class="form-select" id="sfHour" style="width:80px;"></select>
+          <span style="font-weight:700;color:var(--text-secondary);">:</span>
+          <select class="form-select" id="sfMinute" style="width:80px;"></select>
+        </div>
+      </div>
+
+      <!-- Day of week picker (weekly) -->
+      <div id="sfDayPicker" style="display:none;" class="form-group">
+        <label class="form-label">Day of week</label>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="day-btn" data-day="1" onclick="toggleSchedDay(this)">Mo</button>
+          <button class="day-btn" data-day="2" onclick="toggleSchedDay(this)">Tu</button>
+          <button class="day-btn" data-day="3" onclick="toggleSchedDay(this)">We</button>
+          <button class="day-btn" data-day="4" onclick="toggleSchedDay(this)">Th</button>
+          <button class="day-btn" data-day="5" onclick="toggleSchedDay(this)">Fr</button>
+          <button class="day-btn" data-day="6" onclick="toggleSchedDay(this)">Sa</button>
+          <button class="day-btn" data-day="0" onclick="toggleSchedDay(this)">Su</button>
+        </div>
+      </div>
+
+      <!-- Custom cron expression -->
+      <div id="sfCustomCron" style="display:none;" class="form-group">
+        <label class="form-label">Cron expression</label>
+        <input class="form-input" id="sfCronExpr" type="text" placeholder="0 2 * * 1-5" style="font-family:'SF Mono','Fira Code',monospace;" />
+        <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:5px;">
+          Format: <code>minute hour day-of-month month day-of-week</code> — e.g. <code>0 9 * * 1-5</code> = weekdays at 09:00
+        </div>
+      </div>
+
+      <!-- Once — specific date & time -->
+      <div id="sfOncePicker" style="display:none;" class="form-group">
+        <label class="form-label">Run on</label>
+        <input class="form-input" id="sfRunAt" type="datetime-local" style="font-family:var(--font-body);" />
+        <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:5px;">
+          The test will run once at the selected date and time. After it fires it cannot be re-enabled.
+        </div>
+      </div>
+
+      <!-- Enabled toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-app);border-radius:var(--radius-sm);">
+        <span style="font-size:0.84rem;font-weight:600;">Enable schedule</span>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="sfEnabled" checked />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('scheduleFormModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSchedule()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Schedule
       </button>
     </div>
   </div>
@@ -1039,6 +1244,273 @@ async function deleteReport(id) {
   } catch {
     showToast('Could not delete report.', 'error');
   }
+}
+
+/* ── Schedules ───────────────────────────────────────────── */
+let editingScheduleId = null;
+let schedFreq         = 'hourly';  // current frequency tab
+
+async function openSchedules() {
+  document.getElementById('schedulesModal').classList.add('open');
+  await refreshSchedulesList();
+}
+
+async function refreshSchedulesList() {
+  const body = document.getElementById('schedulesBody');
+  body.innerHTML = '<div class="schedule-empty">Loading…</div>';
+
+  let schedules = [];
+  try {
+    const res = await fetch(`${SERVER}/api/schedules`);
+    schedules  = await res.json();
+  } catch {
+    body.innerHTML = '<div class="schedule-empty" style="color:var(--error);">Could not reach server.</div>';
+    return;
+  }
+
+  if (!schedules.length) {
+    body.innerHTML = `<div class="schedule-empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 10px;display:block;opacity:.25"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      No schedules yet. Click <strong>New Schedule</strong> to automate recurring runs.
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = schedules.map(s => {
+    const names      = (s.testIds || []).map(id => TESTS.find(t => t.id === id)?.name || `#${id}`).join(', ');
+    const lastRunStr = s.lastRun
+      ? new Date(s.lastRun).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+      : 'Never';
+
+    const isOnce      = s.type === 'once';
+    const isDone      = isOnce && (s.status === 'completed' || s.status === 'missed');
+    const statusBadge = isOnce
+      ? { pending:   '<span style="font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--warning-light);color:var(--warning);">Pending</span>',
+          completed: '<span style="font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--success-light);color:var(--success);">Completed</span>',
+          missed:    '<span style="font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--error-light);color:var(--error);">Missed</span>',
+        }[s.status || 'pending']
+      : '';
+
+    const toggleHtml = isDone ? '' : `
+      <label class="toggle-wrap" title="${s.enabled ? 'Disable' : 'Enable'} schedule" style="margin-top:2px;">
+        <input type="checkbox" ${s.enabled ? 'checked' : ''} onchange="toggleScheduleEnabled('${s.id}', this.checked)" />
+        <span class="toggle-track"></span>
+      </label>`;
+
+    const editBtn = isDone ? '' : `<button class="btn btn-ghost btn-sm" onclick="openScheduleForm('${s.id}')">Edit</button>`;
+
+    return `
+    <div class="schedule-card" id="scard-${s.id}">
+      <div class="schedule-card-header">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
+            <span style="font-weight:600;font-size:0.88rem;">${escHtml(s.name)}</span>
+            ${statusBadge}
+          </div>
+          <div style="font-size:0.72rem;color:var(--text-secondary);">
+            ${escHtml(s.frequencyLabel)}${!isOnce ? ` &nbsp;·&nbsp; Last run: ${lastRunStr}` : ''}
+          </div>
+          <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            Tests: ${escHtml(names) || '—'}
+          </div>
+        </div>
+        ${toggleHtml}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        ${editBtn}
+        <button class="btn btn-danger btn-sm" onclick="deleteSchedule('${s.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleScheduleEnabled(id, enabled) {
+  try {
+    const all = await (await fetch(`${SERVER}/api/schedules`)).json();
+    const s   = all.find(x => x.id === id);
+    if (!s) return;
+    await fetch(`${SERVER}/api/schedules/${id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ ...s, enabled }),
+    });
+    showToast(`Schedule ${enabled ? 'enabled' : 'disabled'}.`, 'success');
+    await refreshSchedulesList();
+  } catch { showToast('Could not update schedule.', 'error'); }
+}
+
+async function deleteSchedule(id) {
+  if (!confirm('Delete this schedule?')) return;
+  try {
+    await fetch(`${SERVER}/api/schedules/${id}`, { method: 'DELETE' });
+    document.getElementById(`scard-${id}`)?.remove();
+    if (!document.querySelector('.schedule-card')) {
+      document.getElementById('schedulesBody').innerHTML =
+        `<div class="schedule-empty">No schedules yet. Click <strong>New Schedule</strong> to automate recurring runs.</div>`;
+    }
+    showToast('Schedule deleted.', 'success');
+  } catch { showToast('Could not delete schedule.', 'error'); }
+}
+
+/* ── Schedule form ────────────────────────────────────────── */
+function openScheduleForm(id) {
+  editingScheduleId = id || null;
+  document.getElementById('scheduleFormTitle').textContent = id ? 'Edit Schedule' : 'New Schedule';
+
+  // Populate test checkboxes
+  const list = document.getElementById('sfTestList');
+  list.innerHTML = TESTS.map(t => `
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.83rem;">
+      <input type="checkbox" class="sf-test-check" data-id="${t.id}" style="width:15px;height:15px;" />
+      ${escHtml(t.name)}
+      ${!t.real ? '<span style="font-size:0.68rem;color:var(--text-disabled);">(placeholder)</span>' : ''}
+    </label>`).join('');
+
+  // Populate hour/minute selects
+  const hourSel = document.getElementById('sfHour');
+  const minSel  = document.getElementById('sfMinute');
+  hourSel.innerHTML = Array.from({length:24}, (_,i) => `<option value="${i}">${String(i).padStart(2,'0')}</option>`).join('');
+  minSel.innerHTML  = [0,5,10,15,20,25,30,35,40,45,50,55].map(m =>
+    `<option value="${m}">${String(m).padStart(2,'0')}</option>`).join('');
+
+  // Reset frequency to hourly
+  schedFreq = 'hourly';
+  document.querySelectorAll('.freq-btn').forEach(b => b.classList.toggle('active', b.dataset.freq === 'hourly'));
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sfTimePicker').style.display  = 'none';
+  document.getElementById('sfDayPicker').style.display   = 'none';
+  document.getElementById('sfCustomCron').style.display  = 'none';
+  document.getElementById('sfOncePicker').style.display  = 'none';
+  document.getElementById('sfEnabled').closest('div').style.display = '';
+
+  // Defaults
+  document.getElementById('sfName').value       = '';
+  document.getElementById('sfCronExpr').value   = '';
+  document.getElementById('sfEnabled').checked  = true;
+
+  // If editing, fill in existing values
+  if (id) {
+    fetch(`${SERVER}/api/schedules`)
+      .then(r => r.json())
+      .then(all => {
+        const s = all.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('sfName').value      = s.name;
+        document.getElementById('sfEnabled').checked = s.enabled;
+        (s.testIds || []).forEach(tid => {
+          const cb = document.querySelector(`.sf-test-check[data-id="${tid}"]`);
+          if (cb) cb.checked = true;
+        });
+        // Detect frequency type from schedule data
+        if (s.type === 'once') {
+          setSchedFreq('once', document.querySelector('.freq-btn[data-freq=once]'));
+          if (s.runAt) {
+            // datetime-local expects local time in "YYYY-MM-DDTHH:mm" format
+            const dt = new Date(s.runAt);
+            const pad = n => String(n).padStart(2,'0');
+            document.getElementById('sfRunAt').value =
+              `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+          }
+        } else {
+          const parts = (s.cron || '').split(' ');
+          if (s.cron === '0 * * * *') {
+            setSchedFreq('hourly', document.querySelector('.freq-btn[data-freq=hourly]'));
+          } else if (parts[4] === '*' && parts[2] === '*' && parts[3] === '*') {
+            setSchedFreq('daily', document.querySelector('.freq-btn[data-freq=daily]'));
+            document.getElementById('sfHour').value   = parts[1];
+            document.getElementById('sfMinute').value = parts[0];
+          } else if (parts[2] === '*' && parts[3] === '*' && parts[4] !== '*') {
+            setSchedFreq('weekly', document.querySelector('.freq-btn[data-freq=weekly]'));
+            document.getElementById('sfHour').value   = parts[1];
+            document.getElementById('sfMinute').value = parts[0];
+            parts[4].split(',').forEach(d => {
+              const btn = document.querySelector(`.day-btn[data-day="${d}"]`);
+              if (btn) btn.classList.add('active');
+            });
+          } else {
+            setSchedFreq('custom', document.querySelector('.freq-btn[data-freq=custom]'));
+            document.getElementById('sfCronExpr').value = s.cron;
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  document.getElementById('scheduleFormModal').classList.add('open');
+}
+
+function setSchedFreq(freq, btn) {
+  schedFreq = freq;
+  document.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('sfTimePicker').style.display  = (freq === 'daily' || freq === 'weekly') ? '' : 'none';
+  document.getElementById('sfDayPicker').style.display   = freq === 'weekly' ? '' : 'none';
+  document.getElementById('sfCustomCron').style.display  = freq === 'custom' ? '' : 'none';
+  document.getElementById('sfOncePicker').style.display  = freq === 'once'   ? '' : 'none';
+  // Once schedules have no "enable" concept before they run — keep toggle visible but only for pending
+  document.getElementById('sfEnabled').closest('div').style.display = freq === 'once' ? 'none' : '';
+}
+
+function toggleSchedDay(btn) { btn.classList.toggle('active'); }
+
+function buildScheduleParams() {
+  const h = document.getElementById('sfHour')?.value   || '0';
+  const m = document.getElementById('sfMinute')?.value || '0';
+
+  if (schedFreq === 'once') {
+    const val = document.getElementById('sfRunAt').value;
+    if (!val) { showToast('Select a date and time.', 'warn'); return null; }
+    const runAt = new Date(val);
+    if (runAt <= new Date()) { showToast('The selected time must be in the future.', 'warn'); return null; }
+    const label = runAt.toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    return { type: 'once', runAt: runAt.toISOString(), label: `Once on ${label}` };
+  }
+  if (schedFreq === 'hourly') return { type: 'recurring', cron: '0 * * * *', label: 'Every hour' };
+  if (schedFreq === 'daily')  return { type: 'recurring', cron: `${m} ${h} * * *`,  label: `Daily at ${h.padStart(2,'0')}:${m.padStart(2,'0')}` };
+  if (schedFreq === 'weekly') {
+    const days = [...document.querySelectorAll('.day-btn.active')].map(b => b.dataset.day);
+    if (!days.length) { showToast('Select at least one day of the week.', 'warn'); return null; }
+    const dayNames = { 0:'Sun', 1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat' };
+    const label = `Weekly on ${days.map(d => dayNames[d]).join(', ')} at ${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
+    return { type: 'recurring', cron: `${m} ${h} * * ${days.join(',')}`, label };
+  }
+  const expr = document.getElementById('sfCronExpr').value.trim();
+  if (!expr) { showToast('Enter a cron expression.', 'warn'); return null; }
+  return { type: 'recurring', cron: expr, label: `Custom: ${expr}` };
+}
+
+async function saveSchedule() {
+  const name    = document.getElementById('sfName').value.trim();
+  const testIds = [...document.querySelectorAll('.sf-test-check:checked')].map(c => Number(c.dataset.id));
+  const enabled = document.getElementById('sfEnabled').checked;
+
+  if (!name)          { showToast('Enter a schedule name.', 'warn'); return; }
+  if (!testIds.length){ showToast('Select at least one test.', 'warn'); return; }
+
+  const built = buildScheduleParams();
+  if (!built) return;
+
+  const payload = {
+    name, testIds, enabled,
+    type:           built.type,
+    cron:           built.cron,
+    runAt:          built.runAt,
+    frequencyLabel: built.label,
+  };
+
+  try {
+    const url    = editingScheduleId ? `${SERVER}/api/schedules/${editingScheduleId}` : `${SERVER}/api/schedules`;
+    const method = editingScheduleId ? 'PUT' : 'POST';
+    const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Failed to save schedule.', 'error');
+      return;
+    }
+    closeModal('scheduleFormModal');
+    await refreshSchedulesList();
+    showToast(editingScheduleId ? 'Schedule updated.' : 'Schedule created.', 'success');
+  } catch { showToast('Could not reach server.', 'error'); }
 }
 
 /* ── Export ──────────────────────────────────────────────── */
