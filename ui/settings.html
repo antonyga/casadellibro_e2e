@@ -119,6 +119,12 @@
       width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 6px;
     }
     .env-url { font-size: 0.78rem; color: var(--text-secondary); font-family: monospace; }
+    .env-color-swatch {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2.5px solid transparent; cursor: pointer;
+      padding: 0; flex-shrink: 0; transition: all 0.15s;
+    }
+    .env-color-swatch.selected { border-color: var(--text-primary); transform: scale(1.2); }
 
     /* Cron builder */
     .cron-builder {
@@ -496,27 +502,7 @@
                   </tr>
                 </thead>
                 <tbody id="envTableBody">
-                  <tr>
-                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#10b981;"></span><strong style="font-size:0.8rem;">Production</strong></span></td>
-                    <td><span class="env-url">https://www.casadellibro.com</span></td>
-                    <td><span style="font-size:0.78rem;">Chromium, Firefox</span></td>
-                    <td><span class="badge badge-success" style="font-size:0.67rem;">Active</span></td>
-                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('production')">Edit</button></td>
-                  </tr>
-                  <tr>
-                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#f59e0b;"></span><strong style="font-size:0.8rem;">Staging</strong></span></td>
-                    <td><span class="env-url">https://staging.casadellibro.com</span></td>
-                    <td><span style="font-size:0.78rem;">Chromium</span></td>
-                    <td><span class="badge" style="font-size:0.67rem;background:var(--bg-app);border:1px solid var(--border);color:var(--text-secondary);">Idle</span></td>
-                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('staging')">Edit</button></td>
-                  </tr>
-                  <tr>
-                    <td><span style="display:flex;align-items:center;"><span class="env-indicator" style="background:#3b82f6;"></span><strong style="font-size:0.8rem;">Pre-prod</strong></span></td>
-                    <td><span class="env-url">https://preprod.casadellibro.com</span></td>
-                    <td><span style="font-size:0.78rem;">Chromium</span></td>
-                    <td><span class="badge" style="font-size:0.67rem;background:var(--bg-app);border:1px solid var(--border);color:var(--text-secondary);">Idle</span></td>
-                    <td><button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('preprod')">Edit</button></td>
-                  </tr>
+                  <tr><td colspan="5" style="text-align:center;color:var(--text-disabled);font-size:0.8rem;padding:20px 0;">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1116,6 +1102,68 @@
   </main>
 </div>
 
+<!-- Environment add / edit modal -->
+<div class="modal-overlay" id="envModal" onclick="closeEnvModal(event)">
+  <div class="modal" style="max-width:460px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="envModalTitle">Edit Environment</h3>
+      <button class="modal-close" onclick="closeEnvModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
+      <input type="hidden" id="envEditId" />
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" id="envEditName" placeholder="e.g. Production" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Base URL</label>
+        <input type="url" class="form-control" id="envEditUrl" placeholder="https://www.example.com" style="font-family:monospace;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:8px;">Browsers</label>
+        <div style="display:flex;gap:20px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-primary);cursor:pointer;">
+            <input type="checkbox" id="envBrowserChromium" style="accent-color:var(--accent);" /> Chromium
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-primary);cursor:pointer;">
+            <input type="checkbox" id="envBrowserFirefox" style="accent-color:var(--accent);" /> Firefox
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-primary);cursor:pointer;">
+            <input type="checkbox" id="envBrowserWebkit" style="accent-color:var(--accent);" /> WebKit
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-control" id="envEditStatus" style="width:140px;">
+          <option value="active">Active</option>
+          <option value="idle">Idle</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:8px;">Color</label>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button type="button" class="env-color-swatch" data-color="#10b981" style="background:#10b981;" onclick="selectEnvColor(this)"></button>
+          <button type="button" class="env-color-swatch" data-color="#f59e0b" style="background:#f59e0b;" onclick="selectEnvColor(this)"></button>
+          <button type="button" class="env-color-swatch" data-color="#3b82f6" style="background:#3b82f6;" onclick="selectEnvColor(this)"></button>
+          <button type="button" class="env-color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="selectEnvColor(this)"></button>
+          <button type="button" class="env-color-swatch" data-color="#ef4444" style="background:#ef4444;" onclick="selectEnvColor(this)"></button>
+          <button type="button" class="env-color-swatch" data-color="#64748b" style="background:#64748b;" onclick="selectEnvColor(this)"></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeEnvModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEnvironment()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm danger modal -->
 <div class="modal-overlay" id="dangerModal" onclick="closeDangerModal(event)">
   <div class="modal" style="max-width:400px;" onclick="event.stopPropagation()">
@@ -1151,9 +1199,149 @@
     showToast('Settings saved successfully.', 'success');
   }
 
-  /* ── Environment ─────────────────────────────────────────── */
-  function editEnv(name) { showToast('Editing ' + name + ' environment…', 'info'); }
-  function addEnvRow() { showToast('Add environment — coming soon.', 'info'); }
+  /* ── Environments ────────────────────────────────────────── */
+  let _envs = [];
+  let _envModalMode = 'edit'; // 'edit' | 'add'
+
+  async function loadEnvironments() {
+    try {
+      const res = await fetch('/api/environments');
+      _envs = await res.json();
+      renderEnvironments();
+    } catch {
+      showToast('Could not load environments — is the server running?', 'error');
+      document.getElementById('envTableBody').innerHTML =
+        '<tr><td colspan="5" style="text-align:center;color:var(--text-disabled);font-size:0.8rem;padding:20px 0;">Server unavailable.</td></tr>';
+    }
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderEnvironments() {
+    const tbody = document.getElementById('envTableBody');
+    if (!_envs.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-disabled);font-size:0.8rem;padding:20px 0;">No environments configured.</td></tr>';
+      return;
+    }
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    tbody.innerHTML = _envs.map(env => `
+      <tr>
+        <td><span style="display:flex;align-items:center;">
+          <span class="env-indicator" style="background:${escHtml(env.color)};"></span>
+          <strong style="font-size:0.8rem;">${escHtml(env.name)}</strong>
+        </span></td>
+        <td><span class="env-url">${escHtml(env.url)}</span></td>
+        <td><span style="font-size:0.78rem;">${(env.browsers || []).map(cap).join(', ')}</span></td>
+        <td>${env.status === 'active'
+          ? '<span class="badge badge-success" style="font-size:0.67rem;">Active</span>'
+          : '<span class="badge" style="font-size:0.67rem;background:var(--bg-app);border:1px solid var(--border);color:var(--text-secondary);">Idle</span>'
+        }</td>
+        <td style="display:flex;gap:4px;">
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;" onclick="editEnv('${escHtml(env.id)}')">Edit</button>
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem;color:var(--error);" onclick="deleteEnvironment('${escHtml(env.id)}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function editEnv(id) {
+    const env = _envs.find(e => e.id === id);
+    if (!env) return;
+    _envModalMode = 'edit';
+    document.getElementById('envModalTitle').textContent = 'Edit Environment';
+    document.getElementById('envEditId').value   = env.id;
+    document.getElementById('envEditName').value = env.name;
+    document.getElementById('envEditUrl').value  = env.url;
+    document.getElementById('envBrowserChromium').checked = (env.browsers || []).includes('chromium');
+    document.getElementById('envBrowserFirefox').checked  = (env.browsers || []).includes('firefox');
+    document.getElementById('envBrowserWebkit').checked   = (env.browsers || []).includes('webkit');
+    document.getElementById('envEditStatus').value = env.status || 'idle';
+    document.querySelectorAll('.env-color-swatch').forEach(s => {
+      s.classList.toggle('selected', s.dataset.color === env.color);
+    });
+    document.getElementById('envModal').classList.add('open');
+  }
+
+  function addEnvRow() {
+    _envModalMode = 'add';
+    document.getElementById('envModalTitle').textContent = 'Add Environment';
+    document.getElementById('envEditId').value   = '';
+    document.getElementById('envEditName').value = '';
+    document.getElementById('envEditUrl').value  = '';
+    document.getElementById('envBrowserChromium').checked = true;
+    document.getElementById('envBrowserFirefox').checked  = false;
+    document.getElementById('envBrowserWebkit').checked   = false;
+    document.getElementById('envEditStatus').value = 'idle';
+    // Pre-select the purple swatch for new environments
+    document.querySelectorAll('.env-color-swatch').forEach((s, i) => s.classList.toggle('selected', i === 3));
+    document.getElementById('envModal').classList.add('open');
+  }
+
+  function closeEnvModal(e) {
+    if (!e || e.target === document.getElementById('envModal'))
+      document.getElementById('envModal').classList.remove('open');
+  }
+
+  function selectEnvColor(el) {
+    document.querySelectorAll('.env-color-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  async function saveEnvironment() {
+    const name    = document.getElementById('envEditName').value.trim();
+    const url     = document.getElementById('envEditUrl').value.trim();
+    const browsers = [];
+    if (document.getElementById('envBrowserChromium').checked) browsers.push('chromium');
+    if (document.getElementById('envBrowserFirefox').checked)  browsers.push('firefox');
+    if (document.getElementById('envBrowserWebkit').checked)   browsers.push('webkit');
+    const status  = document.getElementById('envEditStatus').value;
+    const colorEl = document.querySelector('.env-color-swatch.selected');
+    const color   = colorEl ? colorEl.dataset.color : '#8b5cf6';
+
+    if (!name)           { showToast('Name is required.', 'error'); return; }
+    if (!url)            { showToast('Base URL is required.', 'error'); return; }
+    if (!browsers.length){ showToast('Select at least one browser.', 'error'); return; }
+
+    const payload = { name, url, browsers, status, color };
+    try {
+      let res;
+      if (_envModalMode === 'add') {
+        res = await fetch('/api/environments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        const id = document.getElementById('envEditId').value;
+        res = await fetch(`/api/environments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+      if (!res.ok) { const e = await res.json(); showToast(e.error || 'Save failed.', 'error'); return; }
+      document.getElementById('envModal').classList.remove('open');
+      showToast(_envModalMode === 'add' ? 'Environment added.' : 'Environment updated.', 'success');
+      loadEnvironments();
+    } catch {
+      showToast('Network error — is the server running?', 'error');
+    }
+  }
+
+  async function deleteEnvironment(id) {
+    const env = _envs.find(e => e.id === id);
+    if (!env || !confirm(`Delete "${env.name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/environments/${id}`, { method: 'DELETE' });
+      if (!res.ok) { showToast('Delete failed.', 'error'); return; }
+      showToast(`"${env.name}" deleted.`, 'error');
+      loadEnvironments();
+    } catch {
+      showToast('Network error — is the server running?', 'error');
+    }
+  }
 
   /* ── Cron builder ────────────────────────────────────────── */
   const humanMap = {
@@ -1261,11 +1449,11 @@
     document.getElementById('dangerConfirmInput').value = '';
     document.getElementById('dangerConfirmBtn').style.opacity = '0.4';
     document.getElementById('dangerConfirmBtn').style.pointerEvents = 'none';
-    document.getElementById('dangerModal').classList.add('active');
+    document.getElementById('dangerModal').classList.add('open');
   }
   function closeDangerModal(e) {
     if (!e || e.target === document.getElementById('dangerModal'))
-      document.getElementById('dangerModal').classList.remove('active');
+      document.getElementById('dangerModal').classList.remove('open');
   }
   function checkDangerConfirm(input) {
     const ok = input.value.toLowerCase() === 'confirm';
@@ -1273,10 +1461,13 @@
     document.getElementById('dangerConfirmBtn').style.pointerEvents = ok ? '' : 'none';
   }
   function executeDanger() {
-    document.getElementById('dangerModal').classList.remove('active');
+    document.getElementById('dangerModal').classList.remove('open');
     showToast('Action executed: ' + pendingDangerAction, 'error');
     pendingDangerAction = null;
   }
+
+  /* ── Init ─────────────────────────────────────────────────── */
+  loadEnvironments();
 
   /* ── Toast ────────────────────────────────────────────────── */
   function showToast(msg, type) {

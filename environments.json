@@ -1,0 +1,22 @@
+[
+  {
+    "id": "production",
+    "name": "Production",
+    "url": "https://www.casadellibro.com",
+    "browsers": [
+      "chromium"
+    ],
+    "status": "active",
+    "color": "#10b981"
+  },
+  {
+    "id": "pre-prod-mlxvtbok",
+    "name": "Pre-Prod",
+    "url": "https://preprod.casadellibro.com",
+    "browsers": [
+      "chromium"
+    ],
+    "status": "active",
+    "color": "#64748b"
+  }
+]

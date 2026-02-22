@@ -20,6 +20,7 @@ const fs         = require('fs');
 const app         = express();
 const PORT        = 3001;
 const REPORTS_DIR = path.join(__dirname, 'reports');
+const ENVS_FILE   = path.join(__dirname, 'environments.json');
 
 // Ensure the reports directory always exists before we do anything else
 fs.mkdirSync(REPORTS_DIR, { recursive: true });
@@ -28,7 +29,7 @@ fs.mkdirSync(REPORTS_DIR, { recursive: true });
 app.use(express.json());
 app.use((req, res, next) => {          // CORS
   res.setHeader('Access-Control-Allow-Origin',  '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -115,6 +116,65 @@ function saveReport(results, totalMs) {
   console.log(`  ✓ Report archived → reports/${id}/`);
   return id;
 }
+
+// ── Environment helpers ────────────────────────────────────────────────────
+const DEFAULT_ENVS = [
+  { id: 'production', name: 'Production', url: 'https://www.casadellibro.com',     browsers: ['chromium', 'firefox'], status: 'active', color: '#10b981' },
+  { id: 'staging',    name: 'Staging',    url: 'https://staging.casadellibro.com', browsers: ['chromium'],            status: 'idle',   color: '#f59e0b' },
+  { id: 'preprod',    name: 'Pre-prod',   url: 'https://preprod.casadellibro.com', browsers: ['chromium'],            status: 'idle',   color: '#3b82f6' },
+];
+
+function loadEnvs() {
+  if (!fs.existsSync(ENVS_FILE)) {
+    fs.writeFileSync(ENVS_FILE, JSON.stringify(DEFAULT_ENVS, null, 2));
+    return [...DEFAULT_ENVS];
+  }
+  try { return JSON.parse(fs.readFileSync(ENVS_FILE, 'utf8')); } catch { return [...DEFAULT_ENVS]; }
+}
+
+function saveEnvs(envs) {
+  fs.writeFileSync(ENVS_FILE, JSON.stringify(envs, null, 2));
+}
+
+// ── GET /api/environments ─────────────────────────────────────────────────
+app.get('/api/environments', (_req, res) => {
+  res.json(loadEnvs());
+});
+
+// ── POST /api/environments ────────────────────────────────────────────────
+app.post('/api/environments', (req, res) => {
+  const { name, url, browsers, status, color } = req.body;
+  if (!name || !url) return res.status(400).json({ error: 'name and url are required' });
+  const envs = loadEnvs();
+  const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now().toString(36);
+  const newEnv = { id, name, url, browsers: browsers || ['chromium'], status: status || 'idle', color: color || '#8b5cf6' };
+  envs.push(newEnv);
+  saveEnvs(envs);
+  res.status(201).json(newEnv);
+});
+
+// ── PUT /api/environments/:id ─────────────────────────────────────────────
+app.put('/api/environments/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, url, browsers, status, color } = req.body;
+  if (!name || !url) return res.status(400).json({ error: 'name and url are required' });
+  const envs = loadEnvs();
+  const idx = envs.findIndex(e => e.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Environment not found' });
+  envs[idx] = { ...envs[idx], name, url, browsers: browsers || ['chromium'], status: status || 'idle', color: color || envs[idx].color };
+  saveEnvs(envs);
+  res.json(envs[idx]);
+});
+
+// ── DELETE /api/environments/:id ──────────────────────────────────────────
+app.delete('/api/environments/:id', (req, res) => {
+  const envs = loadEnvs();
+  const idx = envs.findIndex(e => e.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Environment not found' });
+  envs.splice(idx, 1);
+  saveEnvs(envs);
+  res.json({ ok: true });
+});
 
 // ── GET /api/reports ── list all archived reports ──────────────────────────
 app.get('/api/reports', (req, res) => {
