@@ -343,6 +343,24 @@
     }
     .api-key-hidden { letter-spacing: 0.1em; }
 
+    /* Copy button */
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 7px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      line-height: 0;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .copy-btn.copied { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.08); }
+
     /* Danger zone */
     .danger-card {
       border-color: var(--error);
@@ -925,7 +943,10 @@
             <div class="settings-card-body" style="padding:0 20px;">
               <div class="api-key-row">
                 <span class="api-key-label">OpenAI</span>
-                <span class="api-key-value api-key-hidden">sk-proj-••••••••••••••••••••••••••••••••••••••••••••</span>
+                <span class="api-key-value api-key-hidden" data-copy="sk-proj-••••••••••••••••••••••••••••••••••••••••••••">sk-proj-••••••••••••••••••••••••••••••••••••••••••••</span>
+                <button class="copy-btn" title="Copy to clipboard" onclick="copyApiKey(this)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
                 <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="editApiKey('openai')">Change</button>
               </div>
               <div class="api-key-row">
@@ -935,7 +956,10 @@
               </div>
               <div class="api-key-row">
                 <span class="api-key-label">SendGrid</span>
-                <span class="api-key-value api-key-hidden">SG.••••••••••••••••••••••••••••••••••••••••••••••••</span>
+                <span class="api-key-value api-key-hidden" data-copy="SG.••••••••••••••••••••••••••••••••••••••••••••••••">SG.••••••••••••••••••••••••••••••••••••••••••••••••</span>
+                <button class="copy-btn" title="Copy to clipboard" onclick="copyApiKey(this)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
                 <button class="btn btn-secondary btn-sm" style="font-size:0.7rem;padding:3px 8px;" onclick="editApiKey('sendgrid')">Change</button>
               </div>
             </div>
@@ -1209,6 +1233,24 @@
 
   /* ── API Keys ────────────────────────────────────────────── */
   function editApiKey(name) { showToast('Enter your ' + name + ' API key in the modal — coming soon.', 'info'); }
+
+  const COPY_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
+  const CHECK_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  function copyApiKey(btn) {
+    const valueEl = btn.closest('.api-key-row').querySelector('.api-key-value');
+    const text = valueEl.getAttribute('data-copy') || valueEl.textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = CHECK_ICON;
+      btn.title = 'Copied!';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = COPY_ICON;
+        btn.title = 'Copy to clipboard';
+      }, 2000);
+    }).catch(() => showToast('Could not access clipboard', 'error'));
+  }
 
   /* ── Danger zone ─────────────────────────────────────────── */
   let pendingDangerAction = null;
