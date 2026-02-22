@@ -361,6 +361,31 @@
   </div>
 </div>
 
+<!-- ── Run Configuration Modal ─────────────────────────── -->
+<div class="modal-overlay" id="varsModal" onclick="if(event.target===this)closeModal('varsModal')">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Run Configuration
+      </h3>
+      <button class="modal-close" onclick="closeModal('varsModal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="varsModalBody" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:20px;">
+      <!-- Injected by showVarsModal() -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('varsModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmRunWithVars()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9V3z"/></svg>
+        Run Tests
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Edit Test Modal ──────────────────────────────────── -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
@@ -515,22 +540,105 @@ function clearSelection() {
   updateBulkBar();
 }
 
-/* ── Run from topbar button (runs all currently selected) ── */
+/* ── Run entry points ─────────────────────────────────────── */
 function runSelected() {
   if (!selectedIds.size) { showToast('Select at least one test first.', 'warn'); return; }
-  openTerminalAndRun([...selectedIds]);
+  startRunFlow([...selectedIds]);
+}
+function bulkRun() { startRunFlow([...selectedIds]); clearSelection(); }
+function runOne(id) { startRunFlow([id]); }
+
+/* ── Check for configurable variables, then run or show modal  */
+function startRunFlow(ids) {
+  const varGroups = ids
+    .map(id => TESTS.find(t => t.id === id))
+    .filter(t => t?.variables?.length)
+    .map(t => ({ testId: t.id, testName: t.name, variables: t.variables }));
+
+  if (!varGroups.length) { openTerminalAndRun(ids, {}); return; }
+  showVarsModal(ids, varGroups);
 }
 
-/* ── Run from bulk bar ────────────────────────────────────── */
-function bulkRun() { openTerminalAndRun([...selectedIds]); clearSelection(); }
+/* ── Run Configuration modal ──────────────────────────────── */
+let _pendingRunIds    = [];
+let _pendingVarGroups = [];
 
-/* ── Run a single test from its Actions button ────────────── */
-function runOne(id) { openTerminalAndRun([id]); }
+function resetVarInput(key) {
+  const defaultVal = _pendingVarGroups.flatMap(g => g.variables).find(v => v.key === key)?.default || '';
+  const el = document.getElementById('varInput-' + key);
+  if (el) el.value = defaultVal;
+}
+
+function showVarsModal(ids, varGroups) {
+  _pendingRunIds    = ids;
+  _pendingVarGroups = varGroups;
+
+  // Deduplicate variables by key across tests (same key → one input)
+  const seen = new Set();
+  const body = document.getElementById('varsModalBody');
+  body.innerHTML = varGroups.map(group => {
+    const uniqueVars = group.variables.filter(v => { if (seen.has(v.key)) return false; seen.add(v.key); return true; });
+    if (!uniqueVars.length) return '';
+    return `
+      <div>
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+                    color:var(--text-secondary);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">
+          ${escHtml(group.testName)}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          ${uniqueVars.map(v => `
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
+                <label style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">${escHtml(v.label)}</label>
+                ${v.default ? `<button type="button" onclick="resetVarInput('${v.key}')"
+                    style="font-size:0.68rem;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;">
+                    Reset to default</button>` : ''}
+              </div>
+              ${v.description ? `<div style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:6px;">${escHtml(v.description)}</div>` : ''}
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="${v.type === 'password' ? 'password' : v.type === 'email' ? 'email' : 'text'}"
+                  class="form-input" id="varInput-${v.key}" data-key="${v.key}"
+                  value="${escHtml(v.default || '')}"
+                  placeholder="${v.type === 'password' ? '••••••••' : 'Enter value…'}"
+                  style="flex:1;" />
+                ${v.type === 'password' ? `
+                  <button type="button" title="Show / hide password"
+                    onclick="const i=document.getElementById('varInput-${v.key}');i.type=i.type==='password'?'text':'password';"
+                    style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);
+                           padding:6px 8px;cursor:pointer;color:var(--text-secondary);line-height:0;flex-shrink:0;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('varsModal').classList.add('open');
+}
+
+function confirmRunWithVars() {
+  const vars = {};
+  const seen = new Set();
+  _pendingVarGroups.forEach(group => {
+    group.variables.forEach(v => {
+      if (seen.has(v.key)) return;
+      seen.add(v.key);
+      const el = document.getElementById('varInput-' + v.key);
+      if (el) vars[v.key] = el.value;
+    });
+  });
+  closeModal('varsModal');
+  openTerminalAndRun(_pendingRunIds, vars);
+}
 
 /* ════════════════════════════════════════════════════════════
    CORE: open the terminal modal and stream from the server
    ════════════════════════════════════════════════════════════ */
-function openTerminalAndRun(ids) {
+function openTerminalAndRun(ids, vars = {}) {
   // Separate real vs mock
   const realIds = ids.filter(id => TESTS.find(t => t.id === id)?.real);
   const mockIds = ids.filter(id => !TESTS.find(t => t.id === id)?.real);
@@ -570,7 +678,8 @@ function openTerminalAndRun(ids) {
   // Close any previous EventSource
   if (activeSource) { activeSource.close(); activeSource = null; }
 
-  const url = `${SERVER}/api/run?ids=${realIds.join(',')}`;
+  const urlVars = Object.keys(vars).length ? '&vars=' + encodeURIComponent(JSON.stringify(vars)) : '';
+  const url = `${SERVER}/api/run?ids=${realIds.join(',')}${urlVars}`;
   const es  = new EventSource(url);
   activeSource = es;
 
@@ -853,8 +962,19 @@ async function deleteReport(id) {
   }
 }
 
-/* ── Initial render ───────────────────────────────────────── */
-render();
+/* ── Initial render (fetch variable defs from server first) ── */
+async function init() {
+  try {
+    const res = await fetch(`${SERVER}/api/tests`);
+    const serverTests = await res.json();
+    serverTests.forEach(st => {
+      const t = TESTS.find(t => t.id === st.id);
+      if (t && st.variables?.length) t.variables = st.variables;
+    });
+  } catch { /* server offline — tests run without variable config */ }
+  render();
+}
+init();
 </script>
 </body>
 </html>

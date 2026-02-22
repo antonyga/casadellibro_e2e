@@ -10,7 +10,7 @@ test.describe("Book Search", () => {
     });
 
     await test.step("Search for a book", async () => {
-      await homePage.searchForBook("El Quijote");
+      await homePage.searchForBook(process.env['SEARCH_QUERY'] ?? 'El Quijote');
     });
 
     await test.step("Verify search results are displayed", async () => {

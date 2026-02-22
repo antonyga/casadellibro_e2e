@@ -39,9 +39,32 @@ app.use((req, res, next) => {          // CORS
 // grep values are space-free regexes — avoids Windows cmd.exe arg-splitting
 // when the pattern is passed through shell:true.  "." is the regex wildcard.
 const TEST_SPECS = {
-  1: { label: 'Search by book title',         specFile: 'tests/search.spec.ts', grep: 'searching.by.title'   },
-  2: { label: 'Invalid credentials error',    specFile: 'tests/login.spec.ts',  grep: 'invalid.credentials' },
-  3: { label: 'Login with valid credentials', specFile: 'tests/login.spec.ts',  grep: 'access.account.page' },
+  1: {
+    label:    'Search by book title',
+    specFile: 'tests/search.spec.ts',
+    grep:     'searching.by.title',
+    variables: [
+      { key: 'SEARCH_QUERY', label: 'Search Query', type: 'text', default: 'El Quijote', description: 'Book title or keyword to search for' },
+    ],
+  },
+  2: {
+    label:    'Invalid credentials error',
+    specFile: 'tests/login.spec.ts',
+    grep:     'invalid.credentials',
+    variables: [
+      { key: 'INVALID_USER_EMAIL',    label: 'Email',    type: 'email',    default: process.env.INVALID_USER_EMAIL    || 'sample@sample.com', description: 'Email address expected to fail login' },
+      { key: 'INVALID_USER_PASSWORD', label: 'Password', type: 'password', default: process.env.INVALID_USER_PASSWORD || '12345678',           description: 'Password expected to fail login'     },
+    ],
+  },
+  3: {
+    label:    'Login with valid credentials',
+    specFile: 'tests/login.spec.ts',
+    grep:     'access.account.page',
+    variables: [
+      { key: 'VALID_USER_EMAIL',    label: 'Email',    type: 'email',    default: process.env.VALID_USER_EMAIL    || '', description: 'Valid account email address' },
+      { key: 'VALID_USER_PASSWORD', label: 'Password', type: 'password', default: process.env.VALID_USER_PASSWORD || '', description: 'Valid account password'      },
+    ],
+  },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -214,6 +237,8 @@ app.delete('/api/reports/:id', (req, res) => {
 // ── GET /api/run?ids=1,2,3 ── run tests and stream via SSE ────────────────
 app.get('/api/run', (req, res) => {
   const rawIds  = (req.query.ids || '').split(',').map(Number).filter(Boolean);
+  let   runVars = {};
+  if (req.query.vars) { try { runVars = JSON.parse(req.query.vars); } catch { /* ignore malformed */ } }
 
   res.setHeader('Content-Type',  'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -264,7 +289,7 @@ app.get('/api/run', (req, res) => {
     '--reporter=list,html',   // list → one clean line per test (no cursor tricks); html → report
   ], {
     cwd:   __dirname,
-    env:   { ...process.env, FORCE_COLOR: '0' },
+    env:   { ...process.env, FORCE_COLOR: '0', ...runVars },
     shell: true,
   });
 
