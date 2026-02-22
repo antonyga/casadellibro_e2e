@@ -20,6 +20,12 @@ export default defineConfig({
     locale: "es-ES",
   },
 
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.001,
+    },
+  },
+
   projects: [
     {
       name: "chromium",

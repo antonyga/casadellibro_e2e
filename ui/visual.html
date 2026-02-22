@@ -54,7 +54,7 @@
       width: 44px;
       height: 32px;
       border-radius: 4px;
-      object-fit: cover;
+      overflow: hidden;
       background: var(--bg-app);
       border: 1px solid var(--border);
       flex-shrink: 0;
@@ -63,8 +63,8 @@
       justify-content: center;
       color: var(--text-disabled);
       font-size: 10px;
-      overflow: hidden;
     }
+    .visual-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .visual-item-thumb svg { width: 16px; height: 16px; }
     .visual-item-info { flex: 1; min-width: 0; }
     .visual-item-name {
@@ -88,9 +88,10 @@
       flex-shrink: 0;
       letter-spacing: 0.01em;
     }
-    .diff-pill.none { background: var(--success-light); color: var(--success); }
-    .diff-pill.low  { background: var(--warning-light); color: var(--warning); }
-    .diff-pill.high { background: var(--error-light);   color: var(--error); }
+    .diff-pill.none    { background: var(--success-light); color: var(--success); }
+    .diff-pill.low     { background: var(--warning-light); color: var(--warning); }
+    .diff-pill.high    { background: var(--error-light);   color: var(--error); }
+    .diff-pill.new-tag { background: var(--running-light); color: var(--running); }
 
     /* Right panel — compare view */
     .visual-compare-panel {
@@ -159,25 +160,35 @@
       user-select: none;
     }
 
-    /* Baseline image (full width, underneath) */
-    .swipe-baseline {
+    /* Image panes */
+    .swipe-pane {
       position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      overflow: hidden;
     }
-
-    /* Actual image (clipped from left by slider) */
-    .swipe-actual {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .swipe-pane.actual-pane {
       clip-path: inset(0 0 0 50%);
       transition: clip-path 0.01s;
     }
+    .swipe-pane img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .pane-placeholder {
+      width: 100%;
+      height: 100%;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #4a5568;
+    }
+    .pane-placeholder svg { opacity: 0.4; }
+    .pane-placeholder span { font-size: 0.72rem; }
 
     /* Divider line + handle */
     .swipe-divider {
@@ -264,6 +275,16 @@
       aspect-ratio: 16/9;
       object-fit: cover;
       display: block;
+      background: #1a1a2e;
+    }
+    .sbs-img.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      color: #4a5568;
+      font-size: 0.72rem;
     }
 
     /* Diff highlights view */
@@ -273,12 +294,11 @@
       background: #1a1a2e;
       position: relative;
     }
-    .diff-view-img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; }
-    .diff-highlight {
-      position: absolute;
-      border: 2px solid var(--error);
-      background: rgba(239,68,68,0.15);
-      border-radius: 2px;
+    .diff-view-img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      object-fit: cover;
     }
 
     /* Diff stats bar */
@@ -294,7 +314,7 @@
     .diff-stat { display: flex; flex-direction: column; gap: 2px; }
     .diff-stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); font-weight: 600; }
     .diff-stat-value { font-size: 1.05rem; font-weight: 700; font-family: var(--font-heading); }
-    .diff-stat-value.error { color: var(--error); }
+    .diff-stat-value.error   { color: var(--error); }
     .diff-stat-value.warning { color: var(--warning); }
     .diff-stat-value.success { color: var(--success); }
     .diff-divider { width: 1px; height: 32px; background: var(--border); }
@@ -326,6 +346,7 @@
       align-items: center;
       gap: 6px;
       transition: opacity 0.15s;
+      cursor: pointer;
     }
     .btn-approve:hover { opacity: 0.88; }
     .btn-reject {
@@ -340,10 +361,11 @@
       align-items: center;
       gap: 6px;
       transition: all 0.15s;
+      cursor: pointer;
     }
     .btn-reject:hover { background: var(--error); color: #fff; }
 
-    /* Empty / approved state */
+    /* Empty state */
     .compare-empty {
       flex: 1;
       display: flex;
@@ -356,7 +378,7 @@
     .compare-empty svg { width: 40px; height: 40px; opacity: 0.3; }
     .compare-empty p { font-size: 0.85rem; }
 
-    /* Approved badge overlay */
+    /* Status banners */
     .approved-banner {
       background: var(--success-light);
       border: 1px solid var(--success);
@@ -369,6 +391,108 @@
       font-weight: 600;
       color: var(--success);
     }
+    .new-banner {
+      background: var(--running-light);
+      border: 1px solid var(--running);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--running);
+    }
+
+    /* Visual run modal */
+    .vrun-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .vrun-overlay.active { display: flex; }
+    .vrun-modal {
+      background: #0f172a;
+      border-radius: 12px;
+      width: 700px;
+      max-width: 92vw;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+    }
+    .vrun-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vrun-header-title {
+      color: #f1f5f9;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vrun-output {
+      flex: 1;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      line-height: 1.65;
+      background: #0a0f1a;
+      padding: 16px;
+      white-space: pre-wrap;
+      color: #94a3b8;
+      min-height: 200px;
+      max-height: 400px;
+    }
+    .vrun-output .line-success { color: #34d399; }
+    .vrun-output .line-error   { color: #f87171; }
+    .vrun-output .line-warn    { color: #fbbf24; }
+    .vrun-output .line-info    { color: #60a5fa; }
+    .vrun-footer {
+      padding: 12px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vrun-status { color: #94a3b8; font-size: 0.75rem; }
+    .dot-pulse {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .dot-pulse span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--running);
+      animation: dotBounce 1.2s ease-in-out infinite;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* List loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-app) 25%, var(--border) 50%, var(--bg-app) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
 <body>
@@ -418,16 +542,17 @@
       <div class="breadcrumb"><span>casadellibro.com</span><span>/</span><span class="crumb-current">Visual Tests</span></div>
     </div>
     <div class="topbar-right">
-      <div class="env-selector">
-        <select><option>🟢  Production</option><option>🟡  Staging</option><option>🔵  Pre-prod</option></select>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="runAllVisual()">
+      <button class="btn btn-secondary btn-sm" onclick="runVisualTests(true)" title="Re-capture all screenshots as new baselines">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16"/></svg>
+        Update Baselines
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="runVisualTests(false)" id="runBtn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
-        Run All
+        Run Visual Tests
       </button>
       <button class="btn btn-primary btn-sm" onclick="approveAll()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Approve All Passing
+        Approve All Diffs
       </button>
     </div>
   </header>
@@ -435,137 +560,28 @@
   <main class="content" style="padding:0; overflow:hidden; height:calc(100vh - var(--topbar-h));">
     <div class="visual-layout">
 
-      <!-- LEFT: Test list -->
+      <!-- LEFT: Snapshot list -->
       <div class="visual-list-panel">
         <div class="visual-list-header">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <h3>Snapshots</h3>
-            <span style="font-size:0.72rem;color:var(--text-secondary);">3 diffs found</span>
+            <span id="diffCountBadge" style="font-size:0.72rem;color:var(--text-secondary);">—</span>
           </div>
           <div class="search-bar" style="--height:32px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Filter snapshots…" style="font-size:0.78rem;" />
+            <input type="text" id="filterInput" placeholder="Filter snapshots…" style="font-size:0.78rem;" oninput="applyFilter()" />
           </div>
-          <!-- Summary bar -->
-          <div style="display:flex;gap:8px;">
-            <span class="badge badge-success" style="font-size:0.67rem;">5 approved</span>
-            <span class="badge badge-error" style="font-size:0.67rem;">3 diffs</span>
-            <span class="badge" style="font-size:0.67rem;background:var(--bg-app);color:var(--text-secondary);border:1px solid var(--border);">1 new</span>
+          <div id="summaryBadges" style="display:flex;gap:8px;">
+            <span class="badge" style="font-size:0.67rem;background:var(--bg-app);color:var(--text-secondary);border:1px solid var(--border);">Loading…</span>
           </div>
         </div>
-
         <div class="visual-list-scroll" id="visualList">
-
-          <!-- Diff item — HIGH -->
-          <div class="visual-item active" onclick="selectItem(this,'homepage-hero','Homepage — Hero Banner','3.2% diff · 847 px changed','high','2.1s')" data-id="homepage-hero">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Homepage — Hero Banner</div>
-              <div class="visual-item-meta">search.spec.ts · 2 min ago</div>
-            </div>
-            <span class="diff-pill high">3.2%</span>
+          <!-- Skeleton loading -->
+          <div id="listSkeleton">
+            <div class="skeleton" style="height:52px;margin-bottom:4px;border-radius:8px;"></div>
+            <div class="skeleton" style="height:52px;margin-bottom:4px;border-radius:8px;opacity:0.7;"></div>
+            <div class="skeleton" style="height:52px;margin-bottom:4px;border-radius:8px;opacity:0.4;"></div>
           </div>
-
-          <!-- Diff item — LOW -->
-          <div class="visual-item" onclick="selectItem(this,'cart-total','Cart — Price Total','0.4% diff · 62 px changed','low','1.8s')" data-id="cart-total">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.43H6"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Cart — Price Total</div>
-              <div class="visual-item-meta">login.spec.ts · 2 min ago</div>
-            </div>
-            <span class="diff-pill low">0.4%</span>
-          </div>
-
-          <!-- Diff item — HIGH -->
-          <div class="visual-item" onclick="selectItem(this,'search-results','Search — Results Grid','5.8% diff · 2,104 px changed','high','3.1s')" data-id="search-results">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Search — Results Grid</div>
-              <div class="visual-item-meta">search.spec.ts · 2 min ago</div>
-            </div>
-            <span class="diff-pill high">5.8%</span>
-          </div>
-
-          <div style="height:1px;background:var(--border);margin:8px 4px;"></div>
-          <div style="padding:4px 8px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-disabled);font-weight:700;">Approved</div>
-
-          <!-- Approved items -->
-          <div class="visual-item" onclick="selectItem(this,'nav-header','Nav — Header','Approved','none','0.9s')" data-id="nav-header">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Nav — Header</div>
-              <div class="visual-item-meta">search.spec.ts · approved</div>
-            </div>
-            <span class="diff-pill none">0%</span>
-          </div>
-
-          <div class="visual-item" onclick="selectItem(this,'product-detail','Product — Detail Page','Approved','none','1.2s')" data-id="product-detail">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Product — Detail Page</div>
-              <div class="visual-item-meta">login.spec.ts · approved</div>
-            </div>
-            <span class="diff-pill none">0%</span>
-          </div>
-
-          <div class="visual-item" onclick="selectItem(this,'login-form','Login — Form','Approved','none','0.7s')" data-id="login-form">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Login — Form</div>
-              <div class="visual-item-meta">login.spec.ts · approved</div>
-            </div>
-            <span class="diff-pill none">0%</span>
-          </div>
-
-          <div class="visual-item" onclick="selectItem(this,'footer','Footer — Complete','Approved','none','0.5s')" data-id="footer">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Footer — Complete</div>
-              <div class="visual-item-meta">search.spec.ts · approved</div>
-            </div>
-            <span class="diff-pill none">0%</span>
-          </div>
-
-          <div class="visual-item" onclick="selectItem(this,'404-page','Error — 404 Page','Approved','none','0.6s')" data-id="404-page">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Error — 404 Page</div>
-              <div class="visual-item-meta">search.spec.ts · approved</div>
-            </div>
-            <span class="diff-pill none">0%</span>
-          </div>
-
-          <!-- New (unreviewed) -->
-          <div style="height:1px;background:var(--border);margin:8px 4px;"></div>
-          <div style="padding:4px 8px;font-size:0.67rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-disabled);font-weight:700;">New</div>
-
-          <div class="visual-item" onclick="selectItem(this,'wishlist-new','Wishlist — New Page','New snapshot · no baseline','new','—')" data-id="wishlist-new">
-            <div class="visual-item-thumb">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-            </div>
-            <div class="visual-item-info">
-              <div class="visual-item-name">Wishlist — New Page</div>
-              <div class="visual-item-meta">login.spec.ts · first capture</div>
-            </div>
-            <span class="diff-pill low" style="background:var(--running-light);color:var(--running);">NEW</span>
-          </div>
-
         </div>
       </div>
 
@@ -574,22 +590,22 @@
 
         <div class="compare-toolbar">
           <div class="compare-info">
-            <span class="compare-title" id="compareTitle">Homepage — Hero Banner</span>
-            <span class="compare-meta" id="compareMeta">3.2% diff · 847 px changed · captured in 2.1s</span>
+            <span class="compare-title" id="compareTitle">Select a snapshot</span>
+            <span class="compare-meta" id="compareMeta">Click an item on the left to compare</span>
           </div>
           <div class="compare-actions">
             <div class="view-tabs">
               <button class="view-tab active" onclick="setViewMode('swipe',this)">Swipe</button>
               <button class="view-tab" onclick="setViewMode('side',this)">Side by Side</button>
-              <button class="view-tab" onclick="setViewMode('diff',this)">Diff Overlay</button>
+              <button class="view-tab" onclick="setViewMode('diff',this)">Diff Image</button>
             </div>
-            <button class="btn-reject" id="rejectBtn" onclick="rejectCurrent()">
+            <button class="btn-reject" id="rejectBtn" onclick="rejectCurrent()" style="display:none;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Reject
             </button>
-            <button class="btn-approve" id="approveBtn" onclick="approveCurrent()">
+            <button class="btn-approve" id="approveBtn" onclick="approveCurrent()" style="display:none;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Approve
+              <span id="approveBtnLabel">Approve</span>
             </button>
           </div>
         </div>
@@ -599,19 +615,21 @@
           <!-- ── SWIPE VIEW (default) ── -->
           <div id="swipeView">
             <div class="swipe-wrapper" id="swipeWrap">
-              <!-- Baseline (expected) screenshot — placeholder gradient -->
-              <div class="swipe-baseline" style="background:linear-gradient(135deg,#e0e7ff 0%,#c7d2fe 40%,#a5b4fc 100%);display:flex;align-items:center;justify-content:center;">
-                <div style="text-align:center;color:#4338CA;opacity:0.6;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                  <div style="margin-top:8px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;">BASELINE</div>
+              <!-- Baseline pane -->
+              <div class="swipe-pane baseline-pane" id="baselinePane">
+                <div class="pane-placeholder" id="baselinePlaceholder">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  <span>No baseline</span>
                 </div>
+                <img id="swipeBaselineImg" alt="Baseline" style="display:none;width:100%;height:100%;object-fit:cover;" />
               </div>
-              <!-- Actual screenshot — placeholder with difference indicators -->
-              <div class="swipe-actual" id="swipeActual" style="background:linear-gradient(135deg,#fce7f3 0%,#fbcfe8 40%,#f9a8d4 100%);display:flex;align-items:center;justify-content:center;">
-                <div style="text-align:center;color:#be185d;opacity:0.6;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="18" cy="5" r="3" fill="#ef4444" stroke="none" style="opacity:0.8"/></svg>
-                  <div style="margin-top:8px;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;">ACTUAL</div>
+              <!-- Actual pane -->
+              <div class="swipe-pane actual-pane" id="actualPane">
+                <div class="pane-placeholder" id="actualPlaceholder">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  <span>No actual</span>
                 </div>
+                <img id="swipeActualImg" alt="Actual" style="display:none;width:100%;height:100%;object-fit:cover;" />
               </div>
               <!-- Divider -->
               <div class="swipe-divider" id="swipeDivider"></div>
@@ -621,7 +639,7 @@
               <!-- Labels -->
               <span class="swipe-label swipe-label-baseline">Baseline</span>
               <span class="swipe-label swipe-label-actual">Actual</span>
-              <!-- Invisible range input for drag -->
+              <!-- Range slider -->
               <input type="range" class="swipe-range" id="swipeRange" min="0" max="100" value="50" oninput="onSwipe(this.value)" />
             </div>
             <p style="text-align:center;font-size:0.72rem;color:var(--text-secondary);margin-top:6px;">
@@ -629,75 +647,83 @@
             </p>
           </div>
 
-          <!-- ── SIDE BY SIDE VIEW (hidden by default) ── -->
+          <!-- ── SIDE BY SIDE VIEW ── -->
           <div id="sideView" style="display:none;">
             <div class="sidebyside-view">
               <div class="sbs-pane">
                 <div class="sbs-label">Expected (Baseline)</div>
-                <div class="sbs-img" style="background:linear-gradient(135deg,#e0e7ff,#a5b4fc);display:flex;align-items:center;justify-content:center;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="1" opacity="0.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                </div>
+                <img id="sbsBaselineImg" class="sbs-img" alt="Baseline" />
               </div>
               <div class="sbs-pane">
                 <div class="sbs-label" style="background:rgba(239,68,68,0.5);">Actual (Current Run)</div>
-                <div class="sbs-img" style="background:linear-gradient(135deg,#fce7f3,#f9a8d4);display:flex;align-items:center;justify-content:center;">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1" opacity="0.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="18" cy="5" r="3" fill="#ef4444" stroke="none"/></svg>
+                <img id="sbsActualImg" class="sbs-img" alt="Actual" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── DIFF IMAGE VIEW ── -->
+          <div id="diffView" style="display:none;">
+            <div class="diff-view">
+              <div id="diffImgWrap" style="position:relative;">
+                <img id="diffViewImg" class="diff-view-img" alt="Diff" style="display:none;" />
+                <div id="diffImgEmpty" class="pane-placeholder" style="aspect-ratio:16/9;position:relative;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>No diff image — snapshots match</span>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- ── DIFF OVERLAY VIEW (hidden by default) ── -->
-          <div id="diffView" style="display:none;">
-            <div class="diff-view">
-              <div class="diff-view-img" style="background:linear-gradient(135deg,#e0e7ff,#a5b4fc);display:flex;align-items:center;justify-content:center;">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="1" opacity="0.4"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-              </div>
-              <!-- Highlighted diff regions (positioned over the screenshot) -->
-              <div class="diff-highlight" style="top:8%;left:60%;width:22%;height:18%;"></div>
-              <div class="diff-highlight" style="top:50%;left:5%;width:30%;height:12%;"></div>
-              <div class="diff-highlight" style="top:72%;left:40%;width:15%;height:20%;"></div>
-            </div>
-            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:6px;">Red boxes highlight pixel differences between baseline and actual.</p>
+            <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:6px;">
+              Playwright's diff image highlights changed pixels in magenta/red.
+            </p>
           </div>
 
           <!-- Diff stats -->
-          <div class="diff-stats" id="diffStats">
+          <div class="diff-stats" id="diffStats" style="display:none;">
             <div class="diff-stat">
               <span class="diff-stat-label">Diff %</span>
-              <span class="diff-stat-value error" id="statDiff">3.2%</span>
+              <span class="diff-stat-value" id="statDiff">—</span>
             </div>
             <div class="diff-divider"></div>
             <div class="diff-stat">
               <span class="diff-stat-label">Changed Pixels</span>
-              <span class="diff-stat-value warning" id="statPx">847</span>
+              <span class="diff-stat-value" id="statPx">—</span>
             </div>
             <div class="diff-divider"></div>
             <div class="diff-stat">
               <span class="diff-stat-label">Threshold</span>
-              <span class="diff-stat-value" id="statThreshold">0.1%</span>
+              <span class="diff-stat-value">0.1%</span>
             </div>
             <div class="diff-divider"></div>
             <div class="diff-stat">
               <span class="diff-stat-label">Capture Time</span>
-              <span class="diff-stat-value success" id="statTime">2.1s</span>
+              <span class="diff-stat-value success" id="statTime">—</span>
             </div>
             <div class="diff-divider"></div>
             <div style="flex:1">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <span style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);font-weight:600;">Pixel coverage</span>
-                <span style="font-size:0.72rem;color:var(--error);font-weight:700;" id="statCoverage">3.2% affected</span>
+                <span style="font-size:0.72rem;font-weight:700;" id="statCoverage">—</span>
               </div>
               <div class="diff-progress-bar">
-                <div class="diff-progress-fill" id="diffFill" style="width:3.2%"></div>
+                <div class="diff-progress-fill" id="diffFill" style="width:0%"></div>
               </div>
             </div>
           </div>
 
-          <!-- Approved banner (shown after approval) -->
+          <!-- Status banners -->
           <div class="approved-banner" id="approvedBanner" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Baseline updated — this snapshot is now the new reference.
+            Baseline matches — no visual changes detected.
+          </div>
+          <div class="new-banner" id="newBanner" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            New snapshot — no baseline exists yet. Click <strong>Set as Baseline</strong> to approve.
+          </div>
+
+          <!-- Empty state (no snapshot selected) -->
+          <div class="compare-empty" id="emptyState">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <p>Select a snapshot to compare</p>
           </div>
 
         </div>
@@ -706,64 +732,24 @@
   </main>
 </div>
 
-<!-- Enable Visual Check modal (triggered from Test Suites) -->
-<div class="modal-overlay" id="visualToggleModal" onclick="closeVisualModal(event)">
-  <div class="modal" style="max-width:460px;" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Enable Visual Check</h3>
-      <button class="modal-close" onclick="closeVisualModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+<!-- Visual run terminal modal -->
+<div class="vrun-overlay" id="vrunOverlay">
+  <div class="vrun-modal">
+    <div class="vrun-header">
+      <span class="vrun-header-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Visual Regression Run
+      </span>
+      <button onclick="closeVisualRun()" style="color:#94a3b8;background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:4px 6px;">✕</button>
     </div>
-    <div class="modal-body">
-      <p style="margin-bottom:16px;">Configure visual regression checks for this test suite. Screenshots will be captured at marked steps and compared against the approved baseline.</p>
-
-      <div class="form-group">
-        <label class="form-label">Diff Threshold (%)</label>
-        <input type="number" class="form-control" value="0.1" min="0" max="10" step="0.1" style="width:120px;" />
-        <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:4px;">Differences below this % will be ignored (anti-aliasing tolerance).</p>
-      </div>
-
-      <div class="form-group" style="margin-top:14px;">
-        <label class="form-label">Capture mode</label>
-        <select class="form-control">
-          <option>Full page screenshot</option>
-          <option>Viewport only</option>
-          <option>Element snapshot</option>
-        </select>
-      </div>
-
-      <div class="form-group" style="margin-top:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <label class="form-label">Compare on CI</label>
-            <p style="font-size:0.72rem;color:var(--text-secondary);">Fail the CI pipeline when diffs exceed threshold.</p>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <label class="form-label">Auto-approve on pass</label>
-            <p style="font-size:0.72rem;color:var(--text-secondary);">Automatically set baseline when diff is 0%.</p>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeVisualModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveVisualSettings()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Enable Visual Check
+    <div class="vrun-output" id="vrunOutput"></div>
+    <div class="vrun-footer">
+      <span class="vrun-status" id="vrunStatus">
+        <span class="dot-pulse"><span></span><span></span><span></span></span>
+        &nbsp; Running…
+      </span>
+      <button class="btn btn-sm btn-primary" id="vrunDoneBtn" onclick="closeVisualRun()" style="display:none;">
+        Done
       </button>
     </div>
   </div>
@@ -771,55 +757,225 @@
 
 <script>
   /* ── State ─────────────────────────────────────────────── */
-  let currentItem = { id: 'homepage-hero', diffType: 'high', title: 'Homepage — Hero Banner' };
-  let currentView = 'swipe';
-  const approvedItems = new Set();
+  let allSnapshots = [];   // Full list from API
+  let currentSnap  = null; // Currently selected snapshot
+  let currentView  = 'swipe';
+  let vrunES       = null; // Active EventSource for visual run
 
-  /* ── Item selection ─────────────────────────────────────── */
-  function selectItem(el, id, title, meta, diffType, time) {
-    document.querySelectorAll('.visual-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    currentItem = { id, diffType, title };
+  /* ── Utilities ──────────────────────────────────────────── */
+  function bust(url) { return url ? url + '?t=' + Date.now() : ''; }
 
-    document.getElementById('compareTitle').textContent = title;
+  function formatLabel(title) {
+    return title
+      .replace(/^should capture\s+/i, '')
+      .replace(/\s+screenshot$/i, '')
+      .split(/\s+/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
 
-    if (approvedItems.has(id)) {
-      showApproved();
-      document.getElementById('compareMeta').textContent = 'Approved baseline';
+  function diffPillClass(snap) {
+    if (snap.status === 'new')  return 'new-tag';
+    if (snap.status === 'pass') return 'none';
+    return snap.diffRatio > 0.02 ? 'high' : 'low';
+  }
+
+  function diffPillText(snap) {
+    if (snap.status === 'new')  return 'NEW';
+    if (snap.status === 'pass') return '0%';
+    return (snap.diffRatio * 100).toFixed(1) + '%';
+  }
+
+  function setImg(imgEl, showEl, src) {
+    if (src) {
+      imgEl.src = bust(src);
+      imgEl.style.display = '';
+      if (showEl) showEl.style.display = 'none';
+    } else {
+      imgEl.src = '';
+      imgEl.style.display = 'none';
+      if (showEl) showEl.style.display = '';
+    }
+  }
+
+  /* ── Load & render ──────────────────────────────────────── */
+  async function loadSnapshots() {
+    try {
+      const resp = await fetch('/api/snapshots');
+      const data = await resp.json();
+      allSnapshots = data.snapshots || [];
+      renderList(allSnapshots);
+      updateSummary(allSnapshots);
+      // Auto-select first diff or first item
+      const first = allSnapshots.find(s => s.status === 'diff' || s.status === 'new') || allSnapshots[0];
+      if (first) selectSnapshot(first);
+    } catch (e) {
+      document.getElementById('listSkeleton').innerHTML =
+        `<div style="padding:16px;font-size:0.78rem;color:var(--text-secondary);text-align:center;">
+          No snapshots found.<br>Click <strong>Run Visual Tests</strong> to capture screenshots.
+        </div>`;
+      updateSummary([]);
+    }
+  }
+
+  function updateSummary(snaps) {
+    const pass    = snaps.filter(s => s.status === 'pass').length;
+    const diffs   = snaps.filter(s => s.status === 'diff').length;
+    const newSnap = snaps.filter(s => s.status === 'new').length;
+    document.getElementById('diffCountBadge').textContent =
+      snaps.length ? `${diffs} diff${diffs !== 1 ? 's' : ''}` : '—';
+    const badges = document.getElementById('summaryBadges');
+    badges.innerHTML = snaps.length === 0
+      ? `<span class="badge" style="font-size:0.67rem;background:var(--bg-app);color:var(--text-secondary);border:1px solid var(--border);">No data</span>`
+      : [
+          pass    ? `<span class="badge badge-success" style="font-size:0.67rem;">${pass} passed</span>` : '',
+          diffs   ? `<span class="badge badge-error"   style="font-size:0.67rem;">${diffs} diff${diffs !== 1 ? 's' : ''}</span>` : '',
+          newSnap ? `<span class="badge"               style="font-size:0.67rem;background:var(--running-light);color:var(--running);border:1px solid var(--running);">${newSnap} new</span>` : '',
+        ].filter(Boolean).join('');
+  }
+
+  function renderList(snaps) {
+    const container = document.getElementById('visualList');
+    document.getElementById('listSkeleton')?.remove();
+
+    if (!snaps.length) {
+      container.innerHTML =
+        `<div style="padding:24px 16px;text-align:center;color:var(--text-secondary);font-size:0.8rem;">
+          No snapshots yet.<br>Click <strong>Run Visual Tests</strong> to get started.
+        </div>`;
       return;
     }
 
-    document.getElementById('compareMeta').textContent = meta + (time !== '—' ? ' · captured in ' + time : '');
-    document.getElementById('approvedBanner').style.display = 'none';
-    document.getElementById('approveBtn').style.display = '';
-    document.getElementById('rejectBtn').style.display = '';
+    const iconFor = status => {
+      if (status === 'pass') return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+      if (status === 'new')  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
+    };
 
-    // Update stats
-    const pct = diffType === 'high' ? (id === 'search-results' ? '5.8' : '3.2') : diffType === 'low' ? '0.4' : '0';
-    const px  = diffType === 'high' ? (id === 'search-results' ? '2,104' : '847') : diffType === 'low' ? '62' : '0';
-    document.getElementById('statDiff').textContent = pct + '%';
-    document.getElementById('statDiff').className = 'diff-stat-value ' + (parseFloat(pct) > 1 ? 'error' : parseFloat(pct) > 0 ? 'warning' : 'success');
-    document.getElementById('statPx').textContent = px;
-    document.getElementById('statPx').className = 'diff-stat-value ' + (parseInt(px) > 100 ? 'warning' : 'success');
-    document.getElementById('statTime').textContent = time;
-    document.getElementById('statCoverage').textContent = pct + '% affected';
-    document.getElementById('diffFill').style.width = Math.min(parseFloat(pct) * 10, 100) + '%';
-    document.getElementById('diffStats').style.display = '';
+    container.innerHTML = snaps.map(snap => {
+      const thumbContent = snap.baselineUrl
+        ? `<img src="${bust(snap.baselineUrl)}" alt="thumb" loading="lazy" />`
+        : iconFor(snap.status);
+      const label   = formatLabel(snap.label);
+      const pctText = diffPillText(snap);
+      const pillCls = diffPillClass(snap);
+      const durationS = snap.duration ? (snap.duration / 1000).toFixed(1) + 's' : '—';
+      return `
+        <div class="visual-item" data-id="${snap.name}" onclick="selectSnapshot(allSnapshots.find(s=>s.name==='${snap.name}'))">
+          <div class="visual-item-thumb">${thumbContent}</div>
+          <div class="visual-item-info">
+            <div class="visual-item-name">${label}</div>
+            <div class="visual-item-meta">visual.spec.ts · ${durationS}</div>
+          </div>
+          <span class="diff-pill ${pillCls}">${pctText}</span>
+        </div>`;
+    }).join('');
   }
 
-  function showApproved() {
-    document.getElementById('approvedBanner').style.display = 'flex';
-    document.getElementById('approveBtn').style.display = 'none';
-    document.getElementById('rejectBtn').style.display = 'none';
-    document.getElementById('diffStats').style.display = 'none';
+  function applyFilter() {
+    const q = document.getElementById('filterInput').value.toLowerCase();
+    const filtered = q ? allSnapshots.filter(s => formatLabel(s.label).toLowerCase().includes(q)) : allSnapshots;
+    renderList(filtered);
+  }
+
+  /* ── Select a snapshot ───────────────────────────────────── */
+  function selectSnapshot(snap) {
+    if (!snap) return;
+    currentSnap = snap;
+
+    document.querySelectorAll('.visual-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.id === snap.name);
+    });
+
+    const label       = formatLabel(snap.label);
+    const pct         = (snap.diffRatio * 100).toFixed(1);
+    const durationS   = snap.duration ? (snap.duration / 1000).toFixed(1) + 's' : '—';
+
+    document.getElementById('compareTitle').textContent = label;
+
+    // Meta text
+    if (snap.status === 'diff') {
+      document.getElementById('compareMeta').textContent =
+        `${pct}% diff · ${snap.diffPixels.toLocaleString()} px changed · ${durationS}`;
+    } else if (snap.status === 'new') {
+      document.getElementById('compareMeta').textContent = 'New snapshot · no baseline';
+    } else if (snap.status === 'pass') {
+      document.getElementById('compareMeta').textContent = `No differences · ${durationS}`;
+    } else {
+      document.getElementById('compareMeta').textContent = '—';
+    }
+
+    // Images — for passing tests, show baseline in both panes
+    const baselineSrc = snap.baselineUrl || null;
+    const actualSrc   = snap.actualUrl   || (snap.status === 'pass' ? snap.baselineUrl : null);
+    const diffSrc     = snap.diffUrl     || null;
+
+    // Swipe view
+    setImg(document.getElementById('swipeBaselineImg'), document.getElementById('baselinePlaceholder'), baselineSrc);
+    setImg(document.getElementById('swipeActualImg'),   document.getElementById('actualPlaceholder'),   actualSrc);
+
+    // Side-by-side view
+    const sbsB = document.getElementById('sbsBaselineImg');
+    const sbsA = document.getElementById('sbsActualImg');
+    sbsB.src = bust(baselineSrc); sbsB.style.display = baselineSrc ? '' : 'none';
+    sbsA.src = bust(actualSrc);   sbsA.style.display = actualSrc   ? '' : 'none';
+
+    // Diff view
+    const diffImg   = document.getElementById('diffViewImg');
+    const diffEmpty = document.getElementById('diffImgEmpty');
+    if (diffSrc) {
+      diffImg.src = bust(diffSrc);
+      diffImg.style.display = '';
+      diffEmpty.style.display = 'none';
+    } else {
+      diffImg.style.display = 'none';
+      diffEmpty.style.display = '';
+    }
+
+    // Diff stats
+    const statDiff = document.getElementById('statDiff');
+    statDiff.textContent = pct + '%';
+    statDiff.className   = 'diff-stat-value ' + (snap.diffRatio > 0.01 ? 'error' : snap.diffRatio > 0 ? 'warning' : 'success');
+
+    const statPx = document.getElementById('statPx');
+    statPx.textContent = snap.diffPixels.toLocaleString();
+    statPx.className   = 'diff-stat-value ' + (snap.diffPixels > 100 ? 'warning' : 'success');
+
+    document.getElementById('statTime').textContent = durationS;
+    document.getElementById('statCoverage').textContent = pct + '% affected';
+    document.getElementById('statCoverage').style.color = snap.diffRatio > 0.01 ? 'var(--error)' : 'var(--success)';
+    document.getElementById('diffFill').style.width = Math.min(snap.diffRatio * 1000, 100) + '%';
+
+    // Show/hide panels
+    document.getElementById('emptyState').style.display   = 'none';
+    document.getElementById('approvedBanner').style.display = snap.status === 'pass' ? 'flex' : 'none';
+    document.getElementById('newBanner').style.display      = snap.status === 'new'  ? 'flex' : 'none';
+    document.getElementById('diffStats').style.display      = snap.status === 'diff' ? ''     : 'none';
+
+    // Approve / Reject buttons
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn  = document.getElementById('rejectBtn');
+
+    if (snap.status === 'pass') {
+      approveBtn.style.display = 'none';
+      rejectBtn.style.display  = 'none';
+    } else if (snap.status === 'new') {
+      approveBtn.style.display = '';
+      document.getElementById('approveBtnLabel').textContent = 'Set as Baseline';
+      rejectBtn.style.display = 'none';
+    } else {
+      approveBtn.style.display = '';
+      document.getElementById('approveBtnLabel').textContent = 'Approve';
+      rejectBtn.style.display = '';
+    }
   }
 
   /* ── Swipe slider ───────────────────────────────────────── */
   function onSwipe(val) {
-    const pct = parseInt(val);
-    document.getElementById('swipeActual').style.clipPath = `inset(0 0 0 ${pct}%)`;
-    document.getElementById('swipeDivider').style.left = pct + '%';
-    document.getElementById('swipeHandle').style.left = pct + '%';
+    const pct = parseInt(val, 10);
+    document.getElementById('actualPane').style.clipPath   = `inset(0 0 0 ${pct}%)`;
+    document.getElementById('swipeDivider').style.left    = pct + '%';
+    document.getElementById('swipeHandle').style.left     = pct + '%';
   }
 
   /* ── View modes ─────────────────────────────────────────── */
@@ -833,53 +989,144 @@
   }
 
   /* ── Approve / Reject ───────────────────────────────────── */
-  function approveCurrent() {
-    approvedItems.add(currentItem.id);
-    showApproved();
-    // update the list item badge
-    const listItem = document.querySelector(`[data-id="${currentItem.id}"]`);
-    if (listItem) {
-      const pill = listItem.querySelector('.diff-pill');
-      if (pill) { pill.className = 'diff-pill none'; pill.textContent = '0%'; }
+  async function approveCurrent() {
+    if (!currentSnap || !currentSnap.actualUrl) {
+      showToast('No actual screenshot available to approve.', 'error');
+      return;
     }
-    showToast('Baseline updated for: ' + currentItem.title, 'success');
+    try {
+      const resp = await fetch(`/api/snapshots/${currentSnap.name}/approve`, { method: 'POST' });
+      if (!resp.ok) throw new Error((await resp.json()).error || 'Server error');
+      showToast(`Baseline updated for: ${formatLabel(currentSnap.label)}`, 'success');
+      // Update local state
+      currentSnap.status     = 'pass';
+      currentSnap.diffPixels = 0;
+      currentSnap.diffRatio  = 0;
+      currentSnap.baselineUrl = currentSnap.actualUrl;
+      currentSnap.actualUrl  = null;
+      currentSnap.diffUrl    = null;
+      // Re-render list and panel
+      allSnapshots = allSnapshots.map(s => s.name === currentSnap.name ? currentSnap : s);
+      renderList(allSnapshots);
+      updateSummary(allSnapshots);
+      selectSnapshot(currentSnap);
+    } catch (e) {
+      showToast('Approve failed: ' + e.message, 'error');
+    }
   }
 
   function rejectCurrent() {
     showToast('Snapshot rejected — flagged for developer review.', 'error');
   }
 
-  function approveAll() {
-    document.querySelectorAll('.visual-item').forEach(item => {
-      const id = item.dataset.id;
-      approvedItems.add(id);
-      const pill = item.querySelector('.diff-pill');
-      if (pill) { pill.className = 'diff-pill none'; pill.textContent = '0%'; }
-    });
-    showToast('All passing snapshots approved and baselines updated.', 'success');
+  async function approveAll() {
+    const diffs = allSnapshots.filter(s => s.status === 'diff' || s.status === 'new');
+    if (!diffs.length) { showToast('No diffs or new snapshots to approve.', 'warn'); return; }
+    let approved = 0;
+    for (const snap of diffs) {
+      if (!snap.actualUrl) continue;
+      try {
+        const resp = await fetch(`/api/snapshots/${snap.name}/approve`, { method: 'POST' });
+        if (resp.ok) {
+          snap.status     = 'pass';
+          snap.diffPixels = 0;
+          snap.diffRatio  = 0;
+          snap.baselineUrl = snap.actualUrl;
+          snap.actualUrl  = null;
+          snap.diffUrl    = null;
+          approved++;
+        }
+      } catch { /* skip */ }
+    }
+    allSnapshots = [...allSnapshots];
+    renderList(allSnapshots);
+    updateSummary(allSnapshots);
+    if (currentSnap) selectSnapshot(allSnapshots.find(s => s.name === currentSnap.name) || allSnapshots[0]);
+    showToast(`${approved} snapshot${approved !== 1 ? 's' : ''} approved as new baselines.`, 'success');
   }
 
-  function runAllVisual() {
-    showToast('Visual regression run started…', 'running');
+  /* ── Run visual tests (SSE) ─────────────────────────────── */
+  function runVisualTests(update = false) {
+    if (vrunES) { vrunES.close(); vrunES = null; }
+
+    const overlay = document.getElementById('vrunOverlay');
+    const output  = document.getElementById('vrunOutput');
+    const status  = document.getElementById('vrunStatus');
+    const doneBtn = document.getElementById('vrunDoneBtn');
+
+    output.innerHTML = '';
+    status.innerHTML = '<span class="dot-pulse"><span></span><span></span><span></span></span>&nbsp; Running…';
+    doneBtn.style.display = 'none';
+    overlay.classList.add('active');
+
+    const url = `/api/run-visual${update ? '?update=1' : ''}`;
+    vrunES = new EventSource(url);
+
+    vrunES.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'line') {
+        const span = document.createElement('span');
+        span.className = msg.level ? 'line-' + msg.level : '';
+        span.textContent = msg.text;
+        output.appendChild(span);
+        output.scrollTop = output.scrollHeight;
+      } else if (msg.type === 'visual-done') {
+        vrunES.close(); vrunES = null;
+        if (msg.data) {
+          allSnapshots = msg.data.snapshots || [];
+          renderList(allSnapshots);
+          updateSummary(allSnapshots);
+          const first = allSnapshots.find(s => s.status === 'diff' || s.status === 'new') || allSnapshots[0];
+          if (first) selectSnapshot(first);
+        }
+        const total   = allSnapshots.length;
+        const passed  = allSnapshots.filter(s => s.status === 'pass').length;
+        const newSnap = allSnapshots.filter(s => s.status === 'new').length;
+        const diffs   = allSnapshots.filter(s => s.status === 'diff').length;
+
+        // Append a user-friendly summary to the terminal
+        const summarySpan = document.createElement('span');
+        summarySpan.className = 'line-info';
+        if (newSnap > 0 && diffs === 0) {
+          summarySpan.textContent =
+            `\n✔  Run complete. ${newSnap} new snapshot${newSnap > 1 ? 's' : ''} captured.\n` +
+            `   → Click "Approve All Diffs" (or approve individually) to save them as baselines.\n`;
+        } else if (diffs > 0) {
+          summarySpan.textContent =
+            `\n⚠  Run complete. ${diffs} visual difference${diffs > 1 ? 's' : ''} detected.\n` +
+            `   → Review each diff in the panel and approve or reject.\n`;
+        } else {
+          summarySpan.textContent = `\n✔  All ${passed} snapshot${passed !== 1 ? 's' : ''} match their baselines.\n`;
+          summarySpan.className = 'line-success';
+        }
+        output.appendChild(summarySpan);
+        output.scrollTop = output.scrollHeight;
+
+        status.textContent = newSnap
+          ? `${newSnap} new snapshot${newSnap > 1 ? 's' : ''} — approve to set as baselines`
+          : diffs
+          ? `${diffs} diff${diffs > 1 ? 's' : ''} found — review in the panel`
+          : `All ${passed} snapshots passed`;
+        doneBtn.style.display = '';
+      }
+    };
+
+    vrunES.onerror = () => {
+      if (vrunES) { vrunES.close(); vrunES = null; }
+      status.textContent = 'Connection error';
+      doneBtn.style.display = '';
+    };
   }
 
-  /* ── Visual toggle modal ────────────────────────────────── */
-  function openVisualModal() {
-    document.getElementById('visualToggleModal').classList.add('active');
-  }
-  function closeVisualModal(e) {
-    if (!e || e.target === document.getElementById('visualToggleModal'))
-      document.getElementById('visualToggleModal').classList.remove('active');
-  }
-  function saveVisualSettings() {
-    document.getElementById('visualToggleModal').classList.remove('active');
-    showToast('Visual check enabled with selected settings.', 'success');
+  function closeVisualRun() {
+    if (vrunES) { vrunES.close(); vrunES = null; }
+    document.getElementById('vrunOverlay').classList.remove('active');
   }
 
-  /* ── Toast helper ───────────────────────────────────────── */
-  function showToast(msg, type) {
+  /* ── Toast ──────────────────────────────────────────────── */
+  function showToast(msg, type = 'success') {
     const t = document.createElement('div');
-    t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:0.8rem;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:fadeIn 0.2s ease;max-width:340px;`;
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:0.8rem;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:fadeIn 0.2s ease;max-width:340px;';
     t.style.background = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--running)';
     t.textContent = msg;
     document.body.appendChild(t);
@@ -888,9 +1135,13 @@
 
   /* ── Keyboard shortcuts ─────────────────────────────────── */
   document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
     if (e.key === 'a' || e.key === 'A') approveCurrent();
     if (e.key === 'r' || e.key === 'R') rejectCurrent();
   });
+
+  /* ── Init ───────────────────────────────────────────────── */
+  loadSnapshots();
 </script>
 </body>
 </html>

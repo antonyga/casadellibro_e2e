@@ -1,0 +1,300 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\playwright.config.ts",
+    "rootDir": "C:/Users/Administrator/Documents/casadellibro_e2e/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 3
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Administrator/Documents/casadellibro_e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Administrator/Documents/casadellibro_e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/Administrator/Documents/casadellibro_e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/Administrator/Documents/casadellibro_e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ],
+      [
+        "html"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 12,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "visual.spec.ts",
+      "file": "visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Visual Snapshots",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should capture homepage screenshot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6699,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Navigate to home page",
+                          "duration": 5950
+                        },
+                        {
+                          "title": "Capture homepage snapshot",
+                          "duration": 391
+                        }
+                      ],
+                      "startTime": "2026-02-22T20:24:38.422Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8324bb52c49185e48ff4-a2c316d7ea39f47c9de4",
+              "file": "visual.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "should capture search results screenshot",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 8239,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  155173 pixels (ratio 0.17 of all image pixels) are different.\n\n  Snapshot: search-results.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(search-results.png)\" with timeout 5000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 602665 pixels (ratio 0.66 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 584044 pixels (ratio 0.64 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 155173 pixels (ratio 0.17 of all image pixels) are different.\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  155173 pixels (ratio 0.17 of all image pixels) are different.\n\n  Snapshot: search-results.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(search-results.png)\" with timeout 5000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 602665 pixels (ratio 0.66 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 584044 pixels (ratio 0.64 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 155173 pixels (ratio 0.17 of all image pixels) are different.\u001b[22m\n\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:27:26\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:26:16",
+                        "location": {
+                          "file": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts",
+                          "column": 26,
+                          "line": 27
+                        },
+                        "snippet": "  25 |\n  26 |     await test.step(\"Capture search results snapshot\", async () => {\n> 27 |       await expect(page).toHaveScreenshot(\"search-results.png\", {\n     |                          ^\n  28 |         fullPage: false,\n  29 |       });\n  30 |     });"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts",
+                            "column": 26,
+                            "line": 27
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  155173 pixels (ratio 0.17 of all image pixels) are different.\n\n  Snapshot: search-results.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(search-results.png)\" with timeout 5000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 602665 pixels (ratio 0.66 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 584044 pixels (ratio 0.64 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 155173 pixels (ratio 0.17 of all image pixels) are different.\u001b[22m\n\n\n  25 |\n  26 |     await test.step(\"Capture search results snapshot\", async () => {\n> 27 |       await expect(page).toHaveScreenshot(\"search-results.png\", {\n     |                          ^\n  28 |         fullPage: false,\n  29 |       });\n  30 |     });\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:27:26\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:26:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Navigate to home page",
+                          "duration": 5686
+                        },
+                        {
+                          "title": "Search for a book",
+                          "duration": 183
+                        },
+                        {
+                          "title": "Capture search results snapshot",
+                          "duration": 1884,
+                          "error": {
+                            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  155173 pixels (ratio 0.17 of all image pixels) are different.\n\n  Snapshot: search-results.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(search-results.png)\" with timeout 5000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 602665 pixels (ratio 0.66 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 584044 pixels (ratio 0.64 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 155173 pixels (ratio 0.17 of all image pixels) are different.\u001b[22m\n",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\n  155173 pixels (ratio 0.17 of all image pixels) are different.\n\n  Snapshot: search-results.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(search-results.png)\" with timeout 5000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 602665 pixels (ratio 0.66 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - 584044 pixels (ratio 0.64 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 155173 pixels (ratio 0.17 of all image pixels) are different.\u001b[22m\n\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:27:26\n    at C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts:26:16",
+                            "location": {
+                              "file": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts",
+                              "column": 26,
+                              "line": 27
+                            },
+                            "snippet": "  25 |\n  26 |     await test.step(\"Capture search results snapshot\", async () => {\n> 27 |       await expect(page).toHaveScreenshot(\"search-results.png\", {\n     |                          ^\n  28 |         fullPage: false,\n  29 |       });\n  30 |     });"
+                          }
+                        }
+                      ],
+                      "startTime": "2026-02-22T20:24:38.442Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "search-results-expected.png",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts-snapshots\\search-results-chromium-win32.png"
+                        },
+                        {
+                          "name": "search-results-actual.png",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\test-results\\visual-Visual-Snapshots-sh-dc137-e-search-results-screenshot-chromium\\search-results-actual.png"
+                        },
+                        {
+                          "name": "search-results-diff.png",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\test-results\\visual-Visual-Snapshots-sh-dc137-e-search-results-screenshot-chromium\\search-results-diff.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\test-results\\visual-Visual-Snapshots-sh-dc137-e-search-results-screenshot-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\test-results\\visual-Visual-Snapshots-sh-dc137-e-search-results-screenshot-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Administrator\\Documents\\casadellibro_e2e\\tests\\visual.spec.ts",
+                        "column": 26,
+                        "line": 27
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8324bb52c49185e48ff4-ad1518ce7bd7d0557f55",
+              "file": "visual.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "should capture login form screenshot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 6337,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Navigate to login page",
+                          "duration": 5184
+                        },
+                        {
+                          "title": "Capture login form snapshot",
+                          "duration": 960
+                        }
+                      ],
+                      "startTime": "2026-02-22T20:24:38.441Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8324bb52c49185e48ff4-c4b3f53c470e3b152331",
+              "file": "visual.spec.ts",
+              "line": 33,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-22T20:24:36.913Z",
+    "duration": 10531.002,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

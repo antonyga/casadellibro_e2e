@@ -20,12 +20,17 @@ const cron       = require('node-cron');
 
 const app            = express();
 const PORT           = 3001;
-const REPORTS_DIR    = path.join(__dirname, 'reports');
-const ENVS_FILE      = path.join(__dirname, 'environments.json');
-const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
+const REPORTS_DIR           = path.join(__dirname, 'reports');
+const ENVS_FILE             = path.join(__dirname, 'environments.json');
+const SCHEDULES_FILE        = path.join(__dirname, 'schedules.json');
+const VISUAL_SNAPSHOTS_DIR  = path.join(__dirname, 'visual-snapshots');
+const VISUAL_SNAPSHOTS_FILE = path.join(__dirname, 'visual-snapshots.json');
+const VISUAL_JSON_OUTPUT    = path.join(__dirname, 'visual-results.json');
+const SNAPSHOTS_BASEDIR     = path.join(__dirname, 'tests', 'visual.spec.ts-snapshots');
 
-// Ensure the reports directory always exists before we do anything else
+// Ensure required directories always exist before we do anything else
 fs.mkdirSync(REPORTS_DIR, { recursive: true });
+fs.mkdirSync(VISUAL_SNAPSHOTS_DIR, { recursive: true });
 
 // ── Global middleware ──────────────────────────────────────────────────────
 app.use(express.json());
@@ -77,6 +82,8 @@ function stripAnsi(str) {
 
 function lineLevel(text) {
   if (/passed|\u2713|\u2714|ok\b/i.test(text))       return 'success';
+  // "No baseline" is an expected first-run condition, not a real error
+  if (/snapshot doesn't exist|does not exist at|writing actual/i.test(text)) return 'warn';
   if (/failed|\u2718|\xd7|Error|error\b/i.test(text)) return 'error';
   if (/warn|\u26a0/i.test(text))                      return 'warn';
   if (/running|\u25b6|worker/i.test(text))            return 'info';
@@ -368,6 +375,291 @@ app.get('/api/run', (req, res) => {
   req.on('close', () => proc.kill());
 });
 
+// ── Visual snapshot helpers ────────────────────────────────────────────────
+
+/** Parse Playwright's JSON reporter output into per-snapshot metadata. */
+function parseVisualResults() {
+  if (!fs.existsSync(VISUAL_JSON_OUTPUT)) return [];
+  try {
+    const report = JSON.parse(fs.readFileSync(VISUAL_JSON_OUTPUT, 'utf8'));
+    const results = [];
+
+    function processSpec(spec) {
+      for (const t of spec.tests || []) {
+        const result = (t.results || []).find(r => r.status !== undefined);
+        if (!result) continue;
+
+        const errMsg = (result.errors || []).map(e => e.message || '').join('\n');
+
+        // Derive snapshot name from actual-image attachment or test title
+        const actualAtt = (result.attachments || []).find(
+          a => typeof a.name === 'string' && a.name.endsWith('-actual.png')
+        );
+        let snapshotName;
+        if (actualAtt) {
+          const m = path.basename(actualAtt.name).match(/^(.+?)-chromium-actual\.png$/);
+          if (m) snapshotName = m[1];
+        }
+        if (!snapshotName) {
+          const m = spec.title.match(/capture (.+?) screenshot$/i);
+          snapshotName = m
+            ? m[1].toLowerCase().replace(/\s+/g, '-')
+            : spec.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
+        }
+
+        const isNew = errMsg.includes("snapshot doesn't exist") ||
+                      errMsg.includes("does not exist at") ||
+                      errMsg.includes('writing actual');
+
+        let diffPixels = 0, diffRatio = 0;
+        let status = result.status === 'passed' ? 'pass' : (isNew ? 'new' : 'diff');
+
+        const diffM = errMsg.match(/(\d[\d,]*)\s+pixels?\s+\((\d+\.?\d*)%\)\s+are different/i);
+        if (diffM) {
+          diffPixels = parseInt(diffM[1].replace(/,/g, ''), 10);
+          diffRatio  = parseFloat(diffM[2]) / 100;
+          status = 'diff';
+        }
+
+        const getPath = suffix => {
+          const att = (result.attachments || []).find(
+            a => typeof a.name === 'string' && a.name.endsWith(suffix)
+          );
+          return att?.path || null;
+        };
+
+        results.push({
+          name:       snapshotName,
+          label:      spec.title,
+          status,
+          diffPixels,
+          diffRatio,
+          duration:   result.duration || 0,
+          actualPath: getPath('-actual.png'),
+          diffPath:   getPath('-diff.png'),
+        });
+      }
+    }
+
+    function traverseSuites(suites) {
+      for (const suite of suites || []) {
+        (suite.specs || []).forEach(processSpec);
+        traverseSuites(suite.suites);
+      }
+    }
+    traverseSuites(report.suites);
+    return results;
+  } catch (e) {
+    console.error('  ✗ parseVisualResults error:', e.message);
+    return [];
+  }
+}
+
+/** Copy images to visual-snapshots/ and persist visual-snapshots.json. */
+function buildVisualSnapshots(runResults) {
+  const SUFFIX     = `-chromium-${process.platform}.png`;
+  const capturedAt = new Date().toISOString();
+  const snapshots  = [];
+
+  for (const r of runResults) {
+    const { name, label, status, diffPixels, diffRatio, duration } = r;
+    const snapshotDir = path.join(VISUAL_SNAPSHOTS_DIR, name);
+    fs.mkdirSync(snapshotDir, { recursive: true });
+
+    const baselineSrc  = path.join(SNAPSHOTS_BASEDIR, `${name}${SUFFIX}`);
+    const baselineDest = path.join(snapshotDir, 'baseline.png');
+    const hasBaseline  = fs.existsSync(baselineSrc);
+    if (hasBaseline) { try { fs.copyFileSync(baselineSrc, baselineDest); } catch { /* ignore */ } }
+
+    const actualDest = path.join(snapshotDir, 'actual.png');
+    const hasActual  = !!(r.actualPath && fs.existsSync(r.actualPath));
+    if (hasActual) { try { fs.copyFileSync(r.actualPath, actualDest); } catch { /* ignore */ } }
+
+    const diffDest = path.join(snapshotDir, 'diff.png');
+    const hasDiff  = !!(r.diffPath && fs.existsSync(r.diffPath));
+    if (hasDiff) { try { fs.copyFileSync(r.diffPath, diffDest); } catch { /* ignore */ } }
+
+    snapshots.push({
+      name,
+      label,
+      status,
+      diffPixels,
+      diffRatio,
+      duration,
+      capturedAt,
+      baselineUrl: hasBaseline ? `/visual-snapshots/${name}/baseline.png` : null,
+      actualUrl:   hasActual   ? `/visual-snapshots/${name}/actual.png`   : null,
+      diffUrl:     hasDiff     ? `/visual-snapshots/${name}/diff.png`     : null,
+    });
+  }
+
+  const data = { lastRun: capturedAt, snapshots };
+  fs.writeFileSync(VISUAL_SNAPSHOTS_FILE, JSON.stringify(data, null, 2));
+  return data;
+}
+
+// ── GET /api/snapshots ─────────────────────────────────────────────────────
+app.get('/api/snapshots', (_req, res) => {
+  if (!fs.existsSync(VISUAL_SNAPSHOTS_FILE)) return res.json({ lastRun: null, snapshots: [] });
+  try {
+    res.json(JSON.parse(fs.readFileSync(VISUAL_SNAPSHOTS_FILE, 'utf8')));
+  } catch {
+    res.json({ lastRun: null, snapshots: [] });
+  }
+});
+
+// ── POST /api/snapshots/:name/approve ─────────────────────────────────────
+app.post('/api/snapshots/:name/approve', (req, res) => {
+  const { name } = req.params;
+  if (!/^[a-z0-9-]+$/.test(name)) {
+    return res.status(400).json({ error: 'Invalid snapshot name' });
+  }
+  const SUFFIX      = `-chromium-${process.platform}.png`;
+  const actualPath  = path.join(VISUAL_SNAPSHOTS_DIR, name, 'actual.png');
+  const baselineDst = path.join(SNAPSHOTS_BASEDIR, `${name}${SUFFIX}`);
+  const baselineLoc = path.join(VISUAL_SNAPSHOTS_DIR, name, 'baseline.png');
+
+  if (!fs.existsSync(actualPath)) {
+    return res.status(404).json({ error: 'No actual screenshot found for this snapshot' });
+  }
+  try {
+    fs.mkdirSync(SNAPSHOTS_BASEDIR, { recursive: true });
+    fs.copyFileSync(actualPath, baselineDst);
+    fs.copyFileSync(actualPath, baselineLoc);
+    // Update persisted metadata
+    if (fs.existsSync(VISUAL_SNAPSHOTS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(VISUAL_SNAPSHOTS_FILE, 'utf8'));
+      const snap = (data.snapshots || []).find(s => s.name === name);
+      if (snap) {
+        snap.status     = 'pass';
+        snap.diffPixels = 0;
+        snap.diffRatio  = 0;
+        snap.baselineUrl = `/visual-snapshots/${name}/baseline.png`;
+        snap.actualUrl   = null;
+        snap.diffUrl     = null;
+      }
+      fs.writeFileSync(VISUAL_SNAPSHOTS_FILE, JSON.stringify(data, null, 2));
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── GET /api/run-visual ── run visual tests, stream via SSE ───────────────
+app.get('/api/run-visual', (req, res) => {
+  const updateBaselines = req.query.update === '1';
+
+  res.setHeader('Content-Type',  'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection',    'keep-alive');
+  res.flushHeaders();
+
+  sseWrite(res, {
+    type:  'line',
+    text:  `\n▶  Running visual regression tests${updateBaselines ? ' (updating baselines)' : ''}…\n${'─'.repeat(56)}\n`,
+    level: 'info',
+  });
+
+  // Helpful tip shown before output starts
+  if (!updateBaselines) {
+    sseWrite(res, {
+      type:  'line',
+      text:  `ℹ  If baselines don't exist yet, snapshots will appear as "New" — that's expected on the first run.\n    Approve them afterwards to save them as baselines.\n\n`,
+      level: 'info',
+    });
+  }
+
+  // Remove stale results so we always parse fresh output
+  if (fs.existsSync(VISUAL_JSON_OUTPUT)) {
+    try { fs.unlinkSync(VISUAL_JSON_OUTPUT); } catch { /* ignore */ }
+  }
+
+  const args = [
+    'playwright', 'test', 'tests/visual.spec.ts',
+    '--project=chromium',
+    '--reporter=list,json,html',
+  ];
+  if (updateBaselines) args.push('--update-snapshots');
+
+  const proc = spawn('npx', args, {
+    cwd: __dirname,
+    env: { ...process.env, FORCE_COLOR: '0', PLAYWRIGHT_JSON_OUTPUT_NAME: VISUAL_JSON_OUTPUT },
+    shell: true,
+  });
+
+  // Process output line-by-line so we can intercept "no baseline" messages
+  // and replace them with friendly warnings instead of alarming red errors.
+  let lineBuffer      = '';
+  let inMissingBlock  = false; // true while suppressing verbose stack/code-context
+
+  const onData = chunk => {
+    lineBuffer += stripAnsi(chunk.toString());
+    const lines = lineBuffer.split('\n');
+    lineBuffer  = lines.pop(); // keep any incomplete trailing line
+
+    for (const line of lines) {
+      // ── "No baseline" error → friendly warning ──────────────────────────
+      if (/Error:\s*A snapshot doesn't exist at/i.test(line)) {
+        inMissingBlock = true;
+        const m    = line.match(/([a-z][a-z0-9-]*)(?:-chromium-[^.]+)?\.png/i);
+        const name = m ? m[1] : 'this snapshot';
+        sseWrite(res, {
+          type:  'line',
+          text:  `  ⚠  No baseline for "${name}" — screenshot captured for the first time.\n`,
+          level: 'warn',
+        });
+        continue;
+      }
+
+      // ── While inside a missing-baseline block, suppress noise ────────────
+      if (inMissingBlock) {
+        // Stop suppressing when we hit the next numbered error block or summary
+        const isNextBlock  = /^\s+\d+\)\s+\[/.test(line);
+        const isSummary    = /^\s*\d+\s+(passed|failed)/i.test(line);
+        if (isNextBlock || isSummary) {
+          inMissingBlock = false;
+          if (line.trim()) sseWrite(res, { type: 'line', text: line + '\n', level: lineLevel(line) });
+        }
+        // suppress: source-code context, pointer (^), stack "at ..." lines, attachment paths
+        continue;
+      }
+
+      // ── ✘ test-result lines from visual.spec are "expected" on first run ──
+      // Show them as warnings (yellow) instead of errors (red) so the user
+      // isn't alarmed — the visual-done event will explain the real status.
+      if (/[\u2718\xd7]/.test(line) && /visual\.spec/i.test(line)) {
+        sseWrite(res, { type: 'line', text: line + '\n', level: 'warn' });
+        continue;
+      }
+
+      if (line.trim()) sseWrite(res, { type: 'line', text: line + '\n', level: lineLevel(line) });
+    }
+  };
+  proc.stdout.on('data', onData);
+  proc.stderr.on('data', onData);
+
+  proc.on('error', err => {
+    sseWrite(res, { type: 'line', text: `Process error: ${err.message}\n`, level: 'error' });
+    sseWrite(res, { type: 'visual-done', error: err.message });
+    res.end();
+  });
+
+  proc.on('close', () => {
+    // Flush any remaining buffered content
+    if (lineBuffer.trim() && !inMissingBlock) {
+      sseWrite(res, { type: 'line', text: lineBuffer + '\n', level: lineLevel(lineBuffer) });
+    }
+    sseWrite(res, { type: 'line', text: `${'─'.repeat(56)}\n`, level: 'info' });
+    const runResults = parseVisualResults();
+    const data       = buildVisualSnapshots(runResults);
+    sseWrite(res, { type: 'visual-done', data });
+    res.end();
+  });
+
+  req.on('close', () => proc.kill());
+});
+
 // ── Schedule helpers ───────────────────────────────────────────────────────
 const activeCronJobs    = new Map(); // scheduleId → node-cron task
 const activeOneTimeJobs = new Map(); // scheduleId → setTimeout handle
@@ -594,8 +886,9 @@ app.get('/api/tests', (req, res) => {
 
 // ── Static files (after API routes so /api/* is never shadowed) ───────────
 app.use(express.static(path.join(__dirname, 'ui')));
-app.use('/playwright-report', express.static(path.join(__dirname, 'playwright-report')));
-app.use('/reports',           express.static(REPORTS_DIR));
+app.use('/playwright-report',  express.static(path.join(__dirname, 'playwright-report')));
+app.use('/reports',            express.static(REPORTS_DIR));
+app.use('/visual-snapshots',   express.static(VISUAL_SNAPSHOTS_DIR));
 
 // ── Start ──────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
