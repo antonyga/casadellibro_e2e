@@ -72,6 +72,12 @@ const TEST_SPECS = {
       { key: 'VALID_USER_PASSWORD', label: 'Password', type: 'password', default: process.env.VALID_USER_PASSWORD || '', description: 'Valid account password'      },
     ],
   },
+  4: {
+    label:    'Search libraries by province',
+    specFile: 'tests/libraries.spec.ts',
+    grep:     'filter.libraries.by.province',
+    variables: [],
+  },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────

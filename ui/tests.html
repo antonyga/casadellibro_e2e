@@ -285,7 +285,7 @@
     </a>
     <a href="tests.html" class="nav-item active">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3H9.5L9 7.5c0 .5-.5 1-1 1H4a1 1 0 00-1 1V21a1 1 0 001 1h16a1 1 0 001-1V9.5a1 1 0 00-1-1h-4c-.5 0-1-.5-1-1L14.5 3z"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      <span>Test Suites</span><span class="nav-badge">2</span>
+      <span>Test Suites</span><span class="nav-badge">3</span>
     </a>
     <span class="nav-section-label">Tools</span>
     <a href="codegen.html" class="nav-item">
@@ -713,7 +713,7 @@ const TESTS = [
   { id:1, name:'Search by book title',        suite:'search.spec.ts',   status:'passed',  browser:'Chromium',           duration:'5.6s',  lastRun:'Today, 14:32', real:true  },
   { id:2, name:'Invalid credentials error',   suite:'login.spec.ts',    status:'passed',  browser:'Chromium',           duration:'9.3s',  lastRun:'Today, 14:32', real:true  },
   { id:3, name:'Login with valid credentials',suite:'login.spec.ts',    status:'passed',  browser:'Chromium',           duration:'13.9s', lastRun:'Today, 14:32', real:true  },
-  { id:4, name:'Add book to cart',            suite:'cart.spec.ts',     status:'failed',  browser:'Chromium',           duration:'8.1s',  lastRun:'Today, 13:15', real:false },
+  { id:4, name:'Search libraries by province', suite:'libraries.spec.ts', status:'idle',    browser:'Chromium',           duration:'—',     lastRun:'—',            real:true  },
   { id:5, name:'Checkout flow',               suite:'checkout.spec.ts', status:'running', browser:'Firefox',            duration:'—',     lastRun:'Today, 14:35', real:false },
   { id:6, name:'Book category navigation',    suite:'nav.spec.ts',      status:'passed',  browser:'Chromium + Firefox', duration:'4.2s',  lastRun:'Today, 12:00', real:false },
   { id:7, name:'Search result pagination',    suite:'search.spec.ts',   status:'flaky',   browser:'Chromium',           duration:'7.8s',  lastRun:'Today, 11:45', real:false },
@@ -721,7 +721,6 @@ const TESTS = [
 ];
 
 const ERRORS = {
-  4: { title:'Add book to cart', summary:'<span class="ai-summary-label">✦ AI Error Summary</span>The "Add to Cart" button was blocked by the sticky navigation overlay. The header\'s mega-menu expanded over the button and intercepted all pointer events. <strong>Fix:</strong> add <code>page.keyboard.press("Escape")</code> before clicking the cart button to dismiss the menu.', stack:'TimeoutError: locator.click timeout 15000ms exceeded\n  at CartPage.addToCart (pages/cart-page.ts:24)\n  at tests/cart.spec.ts:18\nExpected: clickable\nReceived: intercepted by .cabecera overlay' },
   8: { title:'Add to wishlist', summary:'<span class="ai-summary-label">✦ AI Error Summary</span>The wishlist icon was not found on the page. The selector <code>[data-test="wishlist-btn"]</code> returned 0 elements. This is likely a self-healing scenario — the element\'s test attribute may have changed. <strong>Fix:</strong> use a role-based selector or run the AI locator repair.', stack:'ElementNotFoundError: [data-test="wishlist-btn"]\n  at WishlistPage.add (pages/wishlist-page.ts:14)\n  at tests/wishlist.spec.ts:22\nExpected: visible\nReceived: not found (0 elements)' },
 };
 

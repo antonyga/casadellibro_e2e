@@ -1,14 +1,1 @@
-[
-  {
-    "id": "mlxzzk67l7zy",
-    "name": "sample",
-    "testIds": [
-      8
-    ],
-    "cron": "0 * * * *",
-    "frequencyLabel": "Every hour",
-    "enabled": true,
-    "createdAt": "2026-02-22T17:04:28.639Z",
-    "lastRun": null
-  }
-]
+[]
