@@ -27,6 +27,7 @@ const VISUAL_SNAPSHOTS_DIR  = path.join(__dirname, 'visual-snapshots');
 const VISUAL_SNAPSHOTS_FILE = path.join(__dirname, 'visual-snapshots.json');
 const VISUAL_JSON_OUTPUT    = path.join(__dirname, 'visual-results.json');
 const SNAPSHOTS_BASEDIR     = path.join(__dirname, 'tests', 'visual.spec.ts-snapshots');
+const DELETED_TESTS_FILE    = path.join(__dirname, 'deleted-tests.json');
 
 // Ensure required directories always exist before we do anything else
 fs.mkdirSync(REPORTS_DIR, { recursive: true });
@@ -886,8 +887,28 @@ app.delete('/api/schedules/:id', (req, res) => {
 });
 
 // ── GET /api/tests ─────────────────────────────────────────────────────────
-app.get('/api/tests', (req, res) => {
-  res.json(Object.entries(TEST_SPECS).map(([id, spec]) => ({ id: Number(id), ...spec })));
+app.get('/api/tests', (_req, res) => {
+  const deleted = fs.existsSync(DELETED_TESTS_FILE)
+    ? JSON.parse(fs.readFileSync(DELETED_TESTS_FILE, 'utf8'))
+    : [];
+  res.json({
+    specs:   Object.entries(TEST_SPECS).map(([id, spec]) => ({ id: Number(id), ...spec })),
+    deleted,
+  });
+});
+
+// ── DELETE /api/tests/:id ──────────────────────────────────────────────────
+app.delete('/api/tests/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: 'Invalid id' });
+  const deleted = fs.existsSync(DELETED_TESTS_FILE)
+    ? JSON.parse(fs.readFileSync(DELETED_TESTS_FILE, 'utf8'))
+    : [];
+  if (!deleted.includes(id)) {
+    deleted.push(id);
+    fs.writeFileSync(DELETED_TESTS_FILE, JSON.stringify(deleted));
+  }
+  res.json({ ok: true });
 });
 
 // ── Static files (after API routes so /api/* is never shadowed) ───────────

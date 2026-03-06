@@ -1116,12 +1116,21 @@ function saveEdit() {
   render();
 }
 function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
-function deleteTest(id)  {
-  if (!confirm('Delete this test?')) return;
+async function removeTest(id) {
+  try { await fetch(`${SERVER}/api/tests/${id}`, { method: 'DELETE' }); } catch { /* offline */ }
   const idx = TESTS.findIndex(t => t.id === id);
-  if (idx > -1) { TESTS.splice(idx, 1); selectedIds.delete(id); render(); }
+  if (idx > -1) { TESTS.splice(idx, 1); selectedIds.delete(id); }
 }
-function bulkDelete()    { if (confirm(`Delete ${selectedIds.size} test(s)?`)) { selectedIds.forEach(id => deleteTest(id)); } }
+async function deleteTest(id) {
+  if (!confirm('Delete this test?')) return;
+  await removeTest(id);
+  render();
+}
+async function bulkDelete() {
+  if (!confirm(`Delete ${selectedIds.size} test(s)?`)) return;
+  await Promise.all([...selectedIds].map(id => removeTest(id)));
+  render();
+}
 
 /* ── Close modals on overlay click ───────────────────────── */
 document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -1565,8 +1574,18 @@ document.addEventListener('click', closeAllExportMenus);
 /* ── Initial render (fetch variable defs from server first) ── */
 async function init() {
   try {
-    const res = await fetch(`${SERVER}/api/tests`);
-    const serverTests = await res.json();
+    const res  = await fetch(`${SERVER}/api/tests`);
+    const data = await res.json();
+    const serverTests = data.specs   ?? data; // backwards-compat if plain array
+    const deletedIds  = data.deleted ?? [];
+
+    // Remove persisted deletions from the local array
+    deletedIds.forEach(id => {
+      const idx = TESTS.findIndex(t => t.id === id);
+      if (idx > -1) TESTS.splice(idx, 1);
+    });
+
+    // Merge server-side variable definitions
     serverTests.forEach(st => {
       const t = TESTS.find(t => t.id === st.id);
       if (t && st.variables?.length) t.variables = st.variables;
