@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-02-22T20:24:47.546Z",
+  "lastRun": "2026-03-06T21:25:32.655Z",
   "snapshots": [
     {
       "name": "homepage",
@@ -7,8 +7,8 @@
       "status": "pass",
       "diffPixels": 0,
       "diffRatio": 0,
-      "duration": 6699,
-      "capturedAt": "2026-02-22T20:24:47.546Z",
+      "duration": 7587,
+      "capturedAt": "2026-03-06T21:25:32.655Z",
       "baselineUrl": "/visual-snapshots/homepage/baseline.png",
       "actualUrl": null,
       "diffUrl": null
@@ -16,14 +16,14 @@
     {
       "name": "search-results",
       "label": "should capture search results screenshot",
-      "status": "diff",
+      "status": "pass",
       "diffPixels": 0,
       "diffRatio": 0,
-      "duration": 8239,
-      "capturedAt": "2026-02-22T20:24:47.546Z",
+      "duration": 9620,
+      "capturedAt": "2026-03-06T21:25:32.655Z",
       "baselineUrl": "/visual-snapshots/search-results/baseline.png",
-      "actualUrl": "/visual-snapshots/search-results/actual.png",
-      "diffUrl": "/visual-snapshots/search-results/diff.png"
+      "actualUrl": null,
+      "diffUrl": null
     },
     {
       "name": "login-form",
@@ -31,8 +31,8 @@
       "status": "pass",
       "diffPixels": 0,
       "diffRatio": 0,
-      "duration": 6337,
-      "capturedAt": "2026-02-22T20:24:47.546Z",
+      "duration": 8151,
+      "capturedAt": "2026-03-06T21:25:32.655Z",
       "baselineUrl": "/visual-snapshots/login-form/baseline.png",
       "actualUrl": null,
       "diffUrl": null
